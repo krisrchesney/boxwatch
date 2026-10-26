@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+
+# Secrets and personal data - never commit
+bgg_token.txt
+boxwatch-data.json
+boxwatch-data.json.tmp
+
+# Local scratch
+.venv/
+*.log

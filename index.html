@@ -1,0 +1,1628 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Boxwatch</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink: #221C16;
+    --ink-soft: #6B5D4F;
+    --ink-faint: #96897A;
+    --paper: #EFEAE0;
+    --surface: #FBF8F2;
+    --surface-raised: #FFFFFF;
+    --line: #DDD3C2;
+    --line-strong: #C6B9A3;
+    --accent: #2F7A63;
+    --accent-strong: #1F5B48;
+    --accent-soft: #DCEAE4;
+    --gold: #B8842A;
+    --gold-soft: #F0E1BE;
+    --danger: #A8452F;
+    --danger-soft: #F1DCD3;
+    --light-chip: #6FA88A;
+    --medium-chip: #C99A3A;
+    --heavy-chip: #A8452F;
+    --shadow: 0 1px 2px rgba(34,28,22,0.06), 0 6px 20px -8px rgba(34,28,22,0.18);
+    --radius: 10px;
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "Karla", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #EDE6D9; --ink-soft: #B7AA97; --ink-faint: #8A7D6C;
+      --paper: #1A1713; --surface: #23201A; --surface-raised: #2B2721;
+      --line: #3B352C; --line-strong: #4C4437;
+      --accent: #52AC8C; --accent-strong: #74C7A9; --accent-soft: #223530;
+      --gold: #D9A94B; --gold-soft: #362C1B; --danger: #D9765C; --danger-soft: #3A2620;
+      --light-chip: #6FA88A; --medium-chip: #D9A94B; --heavy-chip: #D9765C;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 24px -8px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #EDE6D9; --ink-soft: #B7AA97; --ink-faint: #8A7D6C;
+    --paper: #1A1713; --surface: #23201A; --surface-raised: #2B2721;
+    --line: #3B352C; --line-strong: #4C4437;
+    --accent: #52AC8C; --accent-strong: #74C7A9; --accent-soft: #223530;
+    --gold: #D9A94B; --gold-soft: #362C1B; --danger: #D9765C; --danger-soft: #3A2620;
+    --light-chip: #6FA88A; --medium-chip: #D9A94B; --heavy-chip: #D9765C;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 24px -8px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper); color: var(--ink); font-family: var(--font-body);
+    font-size: 15px; line-height: 1.5; min-height: 100vh;
+  }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; margin: 0; }
+  button { font-family: inherit; }
+  input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  a { color: var(--accent); }
+
+  .app-shell { display: flex; min-height: 100vh; }
+
+  .nav-rail { width: 210px; flex: none; background: var(--surface); border-right: 1px solid var(--line); padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; }
+  .brand { font-family: var(--font-display); font-size: 21px; font-weight: 700; padding: 4px 10px 18px; display: flex; align-items: baseline; gap: 6px; }
+  .brand-dot { color: var(--accent); }
+  .nav-btn { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; border: none; background: transparent; color: var(--ink-soft); font-size: 14.5px; font-weight: 600; text-align: left; cursor: pointer; }
+  .nav-btn .ico { font-size: 16px; width: 20px; text-align: center; }
+  .nav-btn:hover { background: var(--paper); color: var(--ink); }
+  .nav-btn.active { background: var(--accent-soft); color: var(--accent-strong); }
+  .nav-footer { margin-top: auto; padding: 10px; font-size: 12px; color: var(--ink-faint); }
+  .sync-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; padding: 4px 8px; border-radius: 100px; background: var(--paper); border: 1px solid var(--line); }
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .sync-pill.off .sync-dot { background: var(--danger); }
+
+  main { flex: 1; min-width: 0; padding: 28px 34px 80px; max-width: 1180px; }
+  .view-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+  .view-head h1 { font-size: 26px; }
+  .view-sub { color: var(--ink-soft); font-size: 13.5px; margin-top: 4px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface-raised); color: var(--ink); font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .btn:hover { border-color: var(--ink-faint); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #F8FBF9; }
+  .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+  .btn.danger { color: var(--danger); border-color: var(--danger-soft); }
+  .btn.danger:hover { border-color: var(--danger); }
+  .btn.ghost { border-color: transparent; background: transparent; }
+  .btn.small { padding: 6px 10px; font-size: 12.5px; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .banner { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 18px; display: flex; gap: 8px; align-items: center; }
+  .banner.warn { background: var(--gold-soft); color: var(--ink); border: 1px solid var(--line); }
+  .banner.info { background: var(--accent-soft); color: var(--accent-strong); border: 1px solid var(--line); }
+
+  .toolbar { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+  .toolbar select, .toolbar input[type="search"] { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface-raised); color: var(--ink); }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+  .game-card { background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
+  .game-card.checked-out { opacity: 0.6; }
+  .card-photo { height: 120px; background: var(--paper); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 30px; color: var(--ink-faint); position: relative; }
+  .card-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .status-flag { position: absolute; top: 8px; right: 8px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 3px 7px; border-radius: 100px; background: var(--danger-soft); color: var(--danger); }
+  .card-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .card-title { font-family: var(--font-display); font-weight: 600; font-size: 15.5px; }
+  .card-meta-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-soft); flex-wrap: wrap; }
+  .rating-chip { display: inline-flex; align-items: center; gap: 3px; color: var(--gold); font-weight: 700; }
+  .weight-chip { padding: 2px 7px; border-radius: 100px; font-size: 11px; font-weight: 700; }
+  .weight-chip.light { background: color-mix(in srgb, var(--light-chip) 20%, transparent); color: var(--light-chip); }
+  .weight-chip.medium { background: color-mix(in srgb, var(--medium-chip) 20%, transparent); color: var(--medium-chip); }
+  .weight-chip.heavy { background: color-mix(in srgb, var(--heavy-chip) 20%, transparent); color: var(--heavy-chip); }
+  .card-dims { font-size: 11.5px; color: var(--ink-faint); }
+  .card-slot { font-size: 11.5px; color: var(--ink-faint); }
+  .card-actions { display: flex; gap: 6px; margin-top: auto; padding-top: 6px; }
+
+  .unit-block { margin-bottom: 30px; }
+  .unit-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+  .unit-head h3 { font-size: 15.5px; }
+  .unit-head .tag { font-size: 11.5px; color: var(--ink-faint); }
+  .unit-grid { display: grid; gap: 8px; }
+  .slot-box { border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); padding: 5px; display: flex; align-items: stretch; gap: 2px; min-height: 64px; position: relative; overflow: hidden; }
+  .slot-empty-note { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10.5px; color: var(--ink-faint); pointer-events: none; }
+  .spine { border-radius: 3px; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; font-size: 10.5px; font-weight: 700; color: #fff; padding: 4px 2px; cursor: pointer; text-overflow: ellipsis; overflow: hidden; min-width: 14px; border: 1px solid rgba(0,0,0,0.15); }
+  .spine.out { opacity: 0.35; border-style: dashed; color: var(--ink); background: transparent !important; }
+  .slot-cap { font-size: 9.5px; color: var(--ink-faint); position: absolute; bottom: 2px; right: 4px; font-family: var(--font-mono); }
+
+  .add-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; align-items: start; }
+  @media (max-width: 860px) { .add-grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); }
+  .panel h2 { font-size: 16.5px; margin-bottom: 4px; }
+  .panel .hint { font-size: 12.5px; color: var(--ink-soft); margin-bottom: 14px; }
+  .capture-drop { border: 1.5px dashed var(--line-strong); border-radius: 8px; padding: 22px; text-align: center; color: var(--ink-soft); font-size: 13px; }
+  .pending-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .pending-item { display: flex; gap: 10px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; align-items: center; }
+  .pending-item img { width: 52px; height: 52px; object-fit: cover; border-radius: 6px; flex: none; }
+  .pending-item .meta { flex: 1; min-width: 0; }
+  .pending-item .meta .id { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); }
+  .pending-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .search-row { display: flex; gap: 8px; }
+  .search-row input { flex: 1; padding: 9px 11px; border-radius: 7px; border: 1px solid var(--line-strong); background: var(--paper); color: var(--ink); }
+  .search-status { font-size: 12.5px; color: var(--ink-soft); margin-top: 10px; }
+  .search-result-card { display: flex; gap: 12px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; margin-top: 10px; background: var(--paper); align-items: flex-start; }
+  .search-result-card .thumb { width: 54px; height: 54px; border-radius: 6px; object-fit: cover; background: var(--surface); flex: none; }
+  .search-result-card .thumb-fallback { width: 54px; height: 54px; border-radius: 6px; background: var(--surface); flex: none; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); color: var(--ink-faint); }
+  .search-result-card .info { flex: 1; min-width: 0; }
+  .search-result-card .name-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .search-result-card .stat-line { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .search-result-card .row-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .edition-badge { font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 100px; background: var(--accent-soft); color: var(--accent-strong); }
+  .expansion-badge { font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 100px; background: var(--gold-soft); color: var(--gold); }
+  .expands-note { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .spine .inside-badge { font-size: 8.5px; opacity: 0.85; }
+  .versions-list { margin: 10px 0 0 66px; display: flex; flex-direction: column; gap: 8px; }
+  .version-row { display: flex; gap: 10px; padding: 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface-raised); align-items: center; }
+  .version-row img, .version-row .thumb-fallback { width: 38px; height: 38px; border-radius: 5px; object-fit: cover; flex: none; background: var(--surface); }
+  .version-row .info { flex: 1; min-width: 0; font-size: 12.5px; }
+  .version-row .dims { color: var(--ink-faint); font-size: 11.5px; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-grid .full { grid-column: 1 / -1; }
+  .field label { display: block; font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.02em; }
+  .field input, .field select { width: 100%; padding: 8px 10px; border-radius: 7px; border: 1px solid var(--line-strong); background: var(--paper); color: var(--ink); }
+  .dims-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+  .settings-section { margin-bottom: 28px; }
+  .settings-section h2 { font-size: 16px; margin-bottom: 4px; }
+  .unit-row, .priority-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; background: var(--surface-raised); }
+  .priority-row .rank { font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); width: 18px; }
+  .priority-row .name { flex: 1; font-weight: 600; }
+  .add-unit-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+  .drawer-backdrop { position: fixed; inset: 0; background: rgba(20,16,12,0.4); display: flex; justify-content: flex-end; z-index: 40; }
+  .drawer { width: min(420px, 100%); background: var(--surface-raised); height: 100%; overflow-y: auto; padding: 22px; box-shadow: -8px 0 30px rgba(0,0,0,0.2); }
+  .drawer h2 { font-size: 19px; margin-bottom: 4px; }
+  .drawer .close-x { float: right; background: none; border: none; font-size: 18px; color: var(--ink-faint); cursor: pointer; }
+  .drawer-photo { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin: 12px 0; background: var(--paper); }
+  .drawer-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; font-size: 13px; }
+  .drawer-stats .k { color: var(--ink-faint); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .drawer-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+
+  .bottom-tabs { display: none; }
+  @media (max-width: 760px) {
+    .nav-rail { display: none; }
+    .app-shell { flex-direction: column; }
+    main { padding: 18px 16px 90px; }
+    .bottom-tabs { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--line); z-index: 30; }
+    .bottom-tabs button { flex: 1; border: none; background: none; color: var(--ink-soft); padding: 10px 4px 8px; font-size: 10.5px; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .bottom-tabs button.active { color: var(--accent-strong); }
+    .bottom-tabs button .ico { font-size: 17px; }
+  }
+
+  [hidden] { display: none !important; }
+  .empty-state { padding: 40px 20px; text-align: center; color: var(--ink-faint); }
+  .empty-state .big { font-size: 34px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <nav class="nav-rail">
+    <div class="brand">Box<span class="brand-dot">watch</span></div>
+    <button class="nav-btn" data-tab="collection"><span class="ico">&#127922;</span> Collection</button>
+    <button class="nav-btn" data-tab="shelves"><span class="ico">&#128209;</span> Shelves</button>
+    <button class="nav-btn" data-tab="add"><span class="ico">&#128248;</span> Add Game</button>
+    <button class="nav-btn" data-tab="settings"><span class="ico">&#9881;</span> Settings</button>
+    <div class="nav-footer">
+      <span class="sync-pill" id="syncPill"><span class="sync-dot"></span> <span id="syncLabel">Connecting&hellip;</span></span>
+    </div>
+  </nav>
+
+  <main>
+    <div id="bannerHost"></div>
+
+    <section id="view-collection">
+      <div class="view-head">
+        <div><h1>Collection</h1><div class="view-sub" id="collectionCount"></div></div>
+        <button class="btn primary" data-goto-tab="add">+ Add game</button>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="collectionSearch" placeholder="Search by name&hellip;" />
+        <select id="collectionSort">
+          <option value="shelf">Shelf order</option>
+          <option value="name">Name (A&ndash;Z)</option>
+          <option value="rating">Rating (high&ndash;low)</option>
+          <option value="complexity">Complexity (low&ndash;high)</option>
+        </select>
+        <select id="collectionFilterStatus">
+          <option value="all">All games</option>
+          <option value="shelved">Shelved only</option>
+          <option value="checked_out">Checked out only</option>
+          <option value="unassigned">Needs a shelf slot</option>
+        </select>
+      </div>
+      <div id="cardGrid" class="card-grid"></div>
+    </section>
+
+    <section id="view-shelves" hidden>
+      <div class="view-head">
+        <div><h1>Shelves</h1><div class="view-sub">Boxes are drawn to scale by spine width within each cube.</div></div>
+        <div style="display:flex; gap:8px;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft);">
+            <input type="checkbox" id="groupTogetherToggle" /> keep priority groups together
+          </label>
+          <button class="btn" id="autoArrangeBtn">Auto-arrange all</button>
+        </div>
+      </div>
+      <div id="shelfHost"></div>
+    </section>
+
+    <section id="view-add" hidden>
+      <div class="view-head"><h1>Add a game</h1></div>
+
+      <div class="panel" style="margin-bottom:22px;">
+        <h2>&#128269; Search by name</h2>
+        <div class="hint">Live search against BoardGameGeek. Pick a match, then optionally expand its editions to grab the exact box (Kickstarter/deluxe/etc.) with accurate dimensions.</div>
+        <div class="search-row">
+          <input id="searchQueryInput" placeholder="e.g. Wingspan" />
+          <button class="btn primary" id="runSearchBtn">Search</button>
+        </div>
+        <div class="search-status" id="searchStatus"></div>
+        <div id="searchResultsHost"></div>
+      </div>
+
+      <div class="add-grid">
+        <div class="panel">
+          <h2>&#128248; Capture a box photo</h2>
+          <div class="hint">Snap or upload a photo of the box. It queues below &mdash; choose Enter details to turn it into a game entry with the photo attached.</div>
+          <label class="capture-drop" style="display:block; cursor:pointer;">
+            <div style="font-size:26px; margin-bottom:6px;">&#128247;</div>
+            Take a photo or choose one from your library
+            <input id="photoInput" type="file" accept="image/*" capture="environment" style="display:none;" />
+          </label>
+          <div class="pending-list" id="pendingList"></div>
+        </div>
+
+        <div class="panel">
+          <h2 id="formTitle">&#9999;&#65039; Add game details manually</h2>
+          <div class="hint">For anything Search can't find, or to tweak an entry by hand.</div>
+          <form id="gameForm">
+            <input type="hidden" id="f_id" />
+            <input type="hidden" id="f_pendingId" />
+            <input type="hidden" id="f_photo" />
+            <div class="form-grid">
+              <div class="field full"><label>Name</label><input id="f_name" required /></div>
+              <div class="field full"><label>Edition / printing (optional)</label><input id="f_editionName" placeholder="e.g. Ultimate Edition, Kickstarter Deluxe" /></div>
+              <div class="field"><label>BGG rating (0&ndash;10)</label><input id="f_rating" type="number" step="any" min="0" max="10" /></div>
+              <div class="field"><label># of BGG ratings</label><input id="f_numRatings" type="number" min="0" /></div>
+              <div class="field"><label>Complexity / weight (1&ndash;5)</label><input id="f_complexity" type="number" step="any" min="1" max="5" /></div>
+              <div class="field"><label>Year published</label><input id="f_year" type="number" /></div>
+              <div class="field"><label>Min players</label><input id="f_minP" type="number" min="1" /></div>
+              <div class="field"><label>Max players</label><input id="f_maxP" type="number" min="1" /></div>
+              <div class="field"><label>Best player count</label><input id="f_bestP" placeholder="e.g. 3&ndash;4" /></div>
+              <div class="field"><label>Play time (minutes)</label><input id="f_playTime" placeholder="e.g. 45&ndash;60" /></div>
+              <div class="field full"><label>Category</label>
+                <input id="f_category" list="categoryOptions" placeholder="e.g. Economic, Party Game, Card Game" />
+                <datalist id="categoryOptions">
+                  <option>Strategy Game</option><option>Family Game</option><option>Party Game</option>
+                  <option>Card Game</option><option>Abstract Strategy</option><option>Wargame</option>
+                  <option>Children's Game</option><option>Economic</option><option>Fantasy</option>
+                  <option>Adventure</option><option>Horror</option><option>Fighting</option>
+                  <option>Dice</option><option>Bluffing</option><option>Deduction</option>
+                  <option>Animals</option><option>Environmental</option><option>Political</option>
+                  <option>City Building</option><option>Exploration</option>
+                </datalist>
+              </div>
+              <div class="field full">
+                <label>Box dimensions, inches (Length × Width × Height)</label>
+                <div class="dims-row">
+                  <input id="f_dimA" type="number" step="any" placeholder="Length" />
+                  <input id="f_dimB" type="number" step="any" placeholder="Width" />
+                  <input id="f_dimC" type="number" step="any" placeholder="Height" />
+                </div>
+              </div>
+              <div class="field full">
+                <label>Shelf orientation</label>
+                <select id="f_orientation">
+                  <option value="auto">Auto (whatever fits best)</option>
+                  <option value="vertical">Standing up (spine out)</option>
+                  <option value="horizontal">Lying flat (on its back)</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label>BGG link (optional)</label>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <input id="f_bggUrl" placeholder="https://boardgamegeek.com/boardgame/..." style="flex:1;" />
+                  <button type="button" class="btn small" id="browseEditionsBtn">Browse editions</button>
+                </div>
+                <div id="editEditionsHost"></div>
+              </div>
+              <div class="field full">
+                <label style="display:flex; align-items:center; gap:7px; text-transform:none; font-size:13px;">
+                  <input type="checkbox" id="f_isExpansion" style="width:auto;" /> This is an expansion
+                </label>
+              </div>
+            </div>
+            <div id="expansionFields" hidden style="margin-top:4px; padding:12px; border:1px solid var(--line); border-radius:8px; background:var(--paper);">
+              <div class="form-grid">
+                <div class="field full"><label>Expands (game name)</label><input id="f_expandsOf" placeholder="e.g. Wingspan" /></div>
+                <div class="field full">
+                  <label>Link to a game already in your collection (optional)</label>
+                  <select id="f_parentGameId"><option value="">— none —</option></select>
+                </div>
+                <div class="field full">
+                  <label style="display:flex; align-items:center; gap:7px; text-transform:none; font-size:13px;">
+                    <input type="checkbox" id="f_storedInParent" style="width:auto;" /> Stored inside that box &mdash; doesn't need its own shelf slot
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="drawer-actions">
+              <button type="submit" class="btn primary">Save game</button>
+              <button type="button" class="btn ghost" id="formCancelBtn">Clear form</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-settings" hidden>
+      <div class="view-head"><h1>Settings</h1></div>
+
+      <div class="settings-section">
+        <h2>Shelving units</h2>
+        <div class="view-sub" style="margin-bottom:10px;">Start with IKEA presets, or define a custom cube.</div>
+        <div id="unitList"></div>
+        <div class="add-unit-row">
+          <select id="presetSelect"></select>
+          <input id="unitLabel" placeholder="Label (optional)" style="padding:8px 10px;border-radius:7px;border:1px solid var(--line-strong);background:var(--surface-raised);color:var(--ink);" />
+          <button class="btn" id="addUnitBtn">+ Add unit</button>
+        </div>
+        <div class="add-unit-row" id="customDimsRow" hidden>
+          <div class="field" style="width:70px;"><label>Rows</label><input id="unitRows" type="number" min="1" /></div>
+          <div class="field" style="width:70px;"><label>Cols</label><input id="unitCols" type="number" min="1" /></div>
+          <div class="field" style="width:80px;"><label>Cube W&#8243;</label><input id="unitCubeW" type="number" step="0.1" /></div>
+          <div class="field" style="width:80px;"><label>Cube H&#8243;</label><input id="unitCubeH" type="number" step="0.1" /></div>
+          <div class="field" style="width:80px;"><label>Cube D&#8243;</label><input id="unitCubeD" type="number" step="0.1" /></div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h2>Sorting priority</h2>
+        <div class="view-sub" style="margin-bottom:10px;">Games are grouped by the top criterion first, then the next, when arranging shelves.</div>
+        <div id="priorityList"></div>
+      </div>
+
+      <div class="settings-section">
+        <h2>Data</h2>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn" id="exportBtn">Export backup (.json)</button>
+          <label class="btn" style="cursor:pointer;">Import backup<input id="importInput" type="file" accept="application/json" style="display:none;" /></label>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="bottom-tabs">
+    <button data-tab="collection"><span class="ico">&#127922;</span>Games</button>
+    <button data-tab="shelves"><span class="ico">&#128209;</span>Shelves</button>
+    <button data-tab="add"><span class="ico">&#128248;</span>Add</button>
+    <button data-tab="settings"><span class="ico">&#9881;</span>More</button>
+  </div>
+</div>
+
+<div id="drawerHost"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var PRESETS = {
+    kallax_1x1:   { label: "Kallax 1×1",        brand: "IKEA Kallax", rows: 1, cols: 1, cubeW: 13,    cubeH: 13,   cubeD: 15.25 },
+    kallax_2x2:   { label: "Kallax 2×2",        brand: "IKEA Kallax", rows: 2, cols: 2, cubeW: 13,    cubeH: 13,   cubeD: 15.25 },
+    kallax_2x4:   { label: "Kallax 2×4 (short)",brand: "IKEA Kallax", rows: 2, cols: 4, cubeW: 13,    cubeH: 13,   cubeD: 15.25 },
+    kallax_4x2:   { label: "Kallax 4×2 (tall)", brand: "IKEA Kallax", rows: 4, cols: 2, cubeW: 13,    cubeH: 13,   cubeD: 15.25 },
+    kallax_4x4:   { label: "Kallax 4×4",        brand: "IKEA Kallax", rows: 4, cols: 4, cubeW: 13,    cubeH: 13,   cubeD: 15.25 },
+    kallax_5x5:   { label: "Kallax 5×5",        brand: "IKEA Kallax", rows: 5, cols: 5, cubeW: 13,    cubeH: 13,   cubeD: 15.25 },
+    eket_1x1:     { label: "Eket 1×1",          brand: "IKEA Eket",   rows: 1, cols: 1, cubeW: 12.75, cubeH: 12.75, cubeD: 12.75 },
+    eket_2x2:     { label: "Eket 2×2",          brand: "IKEA Eket",   rows: 2, cols: 2, cubeW: 12.75, cubeH: 12.75, cubeD: 12.75 },
+    eket_tall1x1: { label: "Eket tall 1×1 (double height)", brand: "IKEA Eket", rows: 1, cols: 1, cubeW: 12.75, cubeH: 25.5, cubeD: 12.75 },
+    billy:        { label: "Billy shelf (one shelf)", brand: "IKEA Billy", rows: 1, cols: 1, cubeW: 30.25, cubeH: 11,   cubeD: 11, adjustable: true },
+    custom:       { label: "Custom cube",             brand: "Custom",     rows: 1, cols: 1, cubeW: 13,    cubeH: 13,   cubeD: 13, adjustable: true }
+  };
+
+  var PRIORITY_FIELDS = {
+    playerCount: { label: "Player count", bucket: function (g) {
+      var m = g.maxPlayers || g.minPlayers || 0;
+      if (!m) return "?";
+      if (m <= 2) return "1–2";
+      if (m <= 4) return "3–4";
+      if (m <= 6) return "5–6";
+      return "7+";
+    }},
+    complexity: { label: "Complexity", bucket: function (g) {
+      var c = Number(g.complexity) || 0;
+      if (!c) return "?";
+      if (c < 2) return "Light";
+      if (c < 3.5) return "Medium";
+      return "Heavy";
+    }},
+    category: { label: "Category", bucket: function (g) { return g.category || "Uncategorized"; } },
+    alphabetical: { label: "Alphabetical", bucket: function (g) { return (g.name || "?").charAt(0).toUpperCase(); } }
+  };
+  var RANKS = {
+    playerCount: { "1–2": 0, "3–4": 1, "5–6": 2, "7+": 3, "?": 4 },
+    complexity: { "Light": 0, "Medium": 1, "Heavy": 2, "?": 3 }
+  };
+
+  var state = null;
+  var activeTab = "collection";
+  var persistTimer = null;
+  var openDrawerGameId = null;
+
+  // Search is live and session-only — never persisted to the saved collection.
+  var lastResults = [];
+  var expandedVersions = {}; // baseId -> array of version objects, once fetched
+  var bestGuessByBase = {}; // baseId -> version id auto-recommended for "Add base game"
+  var languageFilterByBase = {}; // baseId -> selected language filter for its edition list
+
+  // Edit form's "Browse editions" panel — only one active at a time, so plain state is enough.
+  var editFormVersions = [];
+  var editFormBestGuessId = null;
+  var editFormLangFilter = "__all__";
+
+  function renderEditFormEditions() {
+    var host = document.getElementById("editEditionsHost");
+    var filtered = sortVersionsByYear(filterVersionsByLanguage(editFormVersions, editFormLangFilter));
+    var langBar = '<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin:10px 0 8px;">' +
+      '<span class="hint" style="margin:0;">Newest first</span>' +
+      languageSelectHtml(editFormVersions, editFormLangFilter, 'data-action="filter-language" data-scope="edit"') +
+      "</div>";
+    var rowsHtml = filtered.length ? filtered.map(function (v) {
+      var vThumb = v.thumbnail ? '<img src="' + safeUrl(v.thumbnail) + '" alt="" />' : '<div class="thumb-fallback">' + (v.name || "?").charAt(0).toUpperCase() + "</div>";
+      var dims = (v.length && v.width && v.depth) ? (v.length + "″ × " + v.width + "″ × " + v.depth + "″") : "no dimensions listed";
+      var fullTitle = v.editionLabel ? (v.name || "Edition") + " – " + v.editionLabel : (v.name || "Edition");
+      return '<div class="version-row">' + vThumb +
+        '<div class="info"><strong>' + escapeHtml(fullTitle) + "</strong>" +
+        (v.yearpublished ? " (" + v.yearpublished + ")" : "") +
+        (v.id === editFormBestGuessId ? ' <span class="edition-badge">auto-picked</span>' : "") +
+        '<div class="dims mono">' + dims + "</div></div>" +
+        '<button type="button" class="btn small primary" data-action="apply-edition-to-form" ' +
+          'data-name="' + escapeHtml(v.name || "") + '" data-edition-label="' + escapeHtml(v.editionLabel || "") + '" data-year="' + (v.yearpublished || "") + '" ' +
+          'data-a="' + (v.length || 0) + '" data-b="' + (v.width || 0) + '" data-c="' + (v.depth || 0) + '" ' +
+          'data-photo="' + escapeHtml(v.image || v.thumbnail || "") + '">Use this edition</button>' +
+        "</div>";
+    }).join("") : '<div class="hint">No editions match this language filter.</div>';
+    host.innerHTML = '<div class="versions-list" style="margin-left:0;">' + langBar + rowsHtml + "</div>";
+  }
+  var searchSeq = 0;
+
+  function uid(prefix) { return prefix + "_" + Math.random().toString(36).slice(2, 9); }
+
+  function normalize(s) {
+    if (!s.units) s.units = [];
+    if (!s.games) s.games = [];
+    if (!s.pending) s.pending = [];
+    if (!s.priorityOrder) s.priorityOrder = ["playerCount", "complexity", "category"];
+    if (typeof s.groupTogether !== "boolean") s.groupTogether = true;
+    return s;
+  }
+
+  // ---------- geometry / arrangement ----------
+
+  function allSlots() {
+    var slots = [];
+    state.units.forEach(function (u) {
+      for (var r = 0; r < u.rows; r++) {
+        for (var c = 0; c < u.cols; c++) {
+          slots.push({ unitId: u.id, r: r, c: c, id: u.id + ":" + r + "-" + c, w: u.cubeW, h: u.cubeH, d: u.cubeD });
+        }
+      }
+    });
+    return slots;
+  }
+
+  // dims are Length(a) x Width(b) x Height(c). "vertical" stands the box on its
+  // spine (Height faces out, Length goes upright, Width goes front-to-back) —
+  // how most board games sit. "horizontal" lays it flat on its back (Width faces
+  // out, Length goes front-to-back, Height is just vertical clearance). "auto"
+  // tries all three axes and picks whichever consumes the least shelf width.
+  function fitOrientation(dims, slot, orientation) {
+    var a = Number(dims.a) || 0, b = Number(dims.b) || 0, c = Number(dims.c) || 0;
+    if (!a && !b && !c) return 0.01;
+    if (orientation === "vertical") return (a <= slot.h && b <= slot.d) ? c : null;
+    if (orientation === "horizontal") return (c <= slot.h && a <= slot.d) ? b : null;
+    var vals = [a, b, c];
+    var best = null;
+    for (var i = 0; i < 3; i++) {
+      var spine = vals[i];
+      var others = vals.filter(function (_, idx) { return idx !== i; });
+      var fits = (others[0] <= slot.h && others[1] <= slot.d) || (others[1] <= slot.h && others[0] <= slot.d);
+      if (fits) { if (best === null || spine < best) best = spine; }
+    }
+    return best;
+  }
+
+  function groupKeyString(g) {
+    return state.priorityOrder.map(function (f) { return PRIORITY_FIELDS[f].bucket(g); }).join("|");
+  }
+
+  function compareBucket(field, a, b) {
+    var rankMap = RANKS[field];
+    if (rankMap) return (rankMap.hasOwnProperty(a) ? rankMap[a] : 99) - (rankMap.hasOwnProperty(b) ? rankMap[b] : 99);
+    return String(a).localeCompare(String(b));
+  }
+
+  function gameComparator() {
+    return function (x, y) {
+      for (var i = 0; i < state.priorityOrder.length; i++) {
+        var f = state.priorityOrder[i];
+        var c = compareBucket(f, PRIORITY_FIELDS[f].bucket(x), PRIORITY_FIELDS[f].bucket(y));
+        if (c !== 0) return c;
+      }
+      return (x.name || "").localeCompare(y.name || "");
+    };
+  }
+
+  function autoArrangeAll() {
+    var slots = allSlots().map(function (s) { return { id: s.id, w: s.w, h: s.h, d: s.d, remaining: s.w, count: 0 }; });
+    state.games.forEach(function (g) { if (g.storedInParent) g.homeSlot = null; });
+    var sorted = state.games.filter(function (g) { return !g.storedInParent; }).sort(gameComparator());
+    var slotPtr = 0, lastKey = null, unplacedCount = 0;
+    sorted.forEach(function (g) {
+      var key = groupKeyString(g);
+      if (state.groupTogether && lastKey !== null && key !== lastKey && slots[slotPtr] && slots[slotPtr].count > 0) {
+        slotPtr++;
+      }
+      var placed = false;
+      for (var i = slotPtr; i < slots.length; i++) {
+        var spine = fitOrientation(g.dims || {}, slots[i], g.orientation);
+        if (spine !== null && spine <= slots[i].remaining) {
+          g.homeSlot = slots[i].id;
+          g.slotIndex = slots[i].count;
+          slots[i].remaining -= spine;
+          slots[i].count++;
+          slotPtr = i;
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) { g.homeSlot = null; unplacedCount++; }
+      lastKey = key;
+    });
+    return unplacedCount;
+  }
+
+  function quickPlace(g) {
+    if (g.storedInParent) { g.homeSlot = null; return true; }
+    var slots = allSlots();
+    var remaining = {};
+    slots.forEach(function (s) { remaining[s.id] = s.w; });
+    state.games.forEach(function (o) {
+      if (o.id !== g.id && o.homeSlot) {
+        var s = slots.filter(function (x) { return x.id === o.homeSlot; })[0];
+        if (s) remaining[o.homeSlot] -= (fitOrientation(o.dims || {}, s, o.orientation) || 0);
+      }
+    });
+    var gKey = groupKeyString(g);
+    var candidate = null;
+    for (var i = 0; i < slots.length; i++) {
+      var s = slots[i];
+      var hasSameGroup = state.games.some(function (o) { return o.id !== g.id && o.homeSlot === s.id && groupKeyString(o) === gKey; });
+      var spine = fitOrientation(g.dims || {}, s, g.orientation);
+      if (hasSameGroup && spine !== null && spine <= remaining[s.id]) { candidate = s; break; }
+    }
+    if (!candidate) {
+      for (var j = 0; j < slots.length; j++) {
+        var s2 = slots[j];
+        var spine2 = fitOrientation(g.dims || {}, s2, g.orientation);
+        if (spine2 !== null && spine2 <= remaining[s2.id]) { candidate = s2; break; }
+      }
+    }
+    if (candidate) {
+      var occCount = state.games.filter(function (o) { return o.id !== g.id && o.homeSlot === candidate.id; }).length;
+      g.homeSlot = candidate.id;
+      g.slotIndex = occCount;
+      return true;
+    }
+    g.homeSlot = null;
+    return false;
+  }
+
+  // ---------- persistence (local server) ----------
+
+  // With no local server (e.g. the GitHub Pages copy) the app falls back to a demo:
+  // sample data from demo-data.json, saved only in this browser's localStorage.
+  // BGG search is unavailable there because it needs the server-side proxy that
+  // keeps the API token private.
+  var demoMode = false;
+  var freshDemo = false;
+  var DEMO_KEY = "boxwatch-demo-v1";
+  var DEMO_SEARCH_MSG = "Search runs through the local Python server, which keeps your BoardGameGeek API token private. " +
+    "This hosted demo has no server, so run Boxwatch locally to use it (see the README on GitHub).";
+
+  function loadDemoState() {
+    demoMode = true;
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(DEMO_KEY)); } catch (e) { saved = null; }
+    if (saved && saved.games) return Promise.resolve(saved);
+    freshDemo = true; // first visit: shelve the sample games once the data is loaded
+    return fetch("demo-data.json").then(function (r) {
+      if (!r.ok) throw new Error("no demo data");
+      return r.json();
+    });
+  }
+
+  function fetchState() {
+    return fetch("/api/state").then(function (r) {
+      if (!r.ok) throw new Error("no server");
+      return r.json();
+    }).catch(loadDemoState);
+  }
+
+  function schedulePersist() {
+    if (persistTimer) clearTimeout(persistTimer);
+    persistTimer = setTimeout(doPersist, 400);
+  }
+
+  function doPersist() {
+    if (demoMode) {
+      try {
+        localStorage.setItem(DEMO_KEY, JSON.stringify(state));
+        setSyncLabel(true, "Saved in this browser");
+      } catch (e) {
+        setSyncLabel(false, "Browser storage full or blocked");
+      }
+      return;
+    }
+    setSyncLabel(null, "Saving…");
+    fetch("/api/state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(state)
+    }).then(function (r) {
+      if (!r.ok) throw new Error("save failed");
+      setSyncLabel(true, "Saved");
+    }).catch(function () {
+      setSyncLabel(false, "Save failed — will retry");
+      schedulePersist();
+    });
+  }
+
+  function setSyncLabel(ok, msg) {
+    var pill = document.getElementById("syncPill");
+    var label = document.getElementById("syncLabel");
+    if (!pill || !label) return;
+    pill.classList.toggle("off", ok === false);
+    label.textContent = msg;
+  }
+
+  // ---------- BGG search (live) ----------
+
+  function runSearch() {
+    var q = document.getElementById("searchQueryInput").value.trim();
+    var statusEl = document.getElementById("searchStatus");
+    var host = document.getElementById("searchResultsHost");
+    if (!q) return;
+    if (demoMode) { statusEl.textContent = DEMO_SEARCH_MSG; return; }
+    var mySeq = ++searchSeq;
+    lastResults = [];
+    expandedVersions = {};
+    host.innerHTML = "";
+    statusEl.textContent = "Searching BoardGameGeek…";
+    fetch("/api/search?q=" + encodeURIComponent(q)).then(function (r) { return r.json(); }).then(function (data) {
+      if (mySeq !== searchSeq) return; // a newer search superseded this one
+      if (!data.ok) {
+        statusEl.textContent = "Search failed: " + (data.error || "unknown error") +
+          ". If this says “Unauthorized”, BGG may be blocking this network — try again in a moment, or add the game manually below.";
+        return;
+      }
+      lastResults = data.results || [];
+      statusEl.textContent = lastResults.length ? (lastResults.length + " match" + (lastResults.length === 1 ? "" : "es")) : "No matches found.";
+      renderSearchResults();
+    }).catch(function (err) {
+      if (mySeq !== searchSeq) return;
+      statusEl.textContent = "Couldn't reach the local server: " + err.message;
+    });
+  }
+
+  function renderSearchResults() {
+    var host = document.getElementById("searchResultsHost");
+    host.innerHTML = "";
+    lastResults.forEach(function (r) {
+      var card = document.createElement("div");
+      card.className = "search-result-card";
+      var thumb = r.thumbnail ? '<img class="thumb" src="' + safeUrl(r.thumbnail) + '" alt="" />' : '<div class="thumb-fallback">' + (r.name || "?").charAt(0).toUpperCase() + "</div>";
+      var versions = expandedVersions[r.id];
+      var versionsHtml = "";
+      if (versions) {
+        if (!versions.length) {
+          versionsHtml = '<div class="versions-list"><div class="hint">No separate editions listed on BGG for this game.</div></div>';
+        } else {
+          var bestId = bestGuessByBase[r.id];
+          var selectedLang = languageFilterByBase[r.id];
+          var filtered = sortVersionsByYear(filterVersionsByLanguage(versions, selectedLang));
+          var langBar = '<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">' +
+            '<span class="hint" style="margin:0;">Newest first</span>' +
+            languageSelectHtml(versions, selectedLang, 'data-action="filter-language" data-scope="search" data-base-id="' + r.id + '"') +
+            "</div>";
+          var rowsHtml = filtered.length ? filtered.map(function (v) {
+            var vThumb = v.thumbnail ? '<img src="' + safeUrl(v.thumbnail) + '" alt="" />' : '<div class="thumb-fallback">' + (v.name || "?").charAt(0).toUpperCase() + "</div>";
+            var dims = (v.length && v.width && v.depth) ? (v.length + "″ × " + v.width + "″ × " + v.depth + "″") : "no dimensions listed";
+            var fullTitle = v.editionLabel ? (v.name || "Edition") + " – " + v.editionLabel : (v.name || "Edition");
+            return '<div class="version-row">' + vThumb +
+              '<div class="info"><strong>' + escapeHtml(fullTitle) + "</strong>" +
+              (v.yearpublished ? " (" + v.yearpublished + ")" : "") +
+              (v.id === bestId ? ' <span class="edition-badge">auto-picked</span>' : "") +
+              '<div class="dims mono">' + dims + "</div></div>" +
+              '<button class="btn small primary" data-action="add-version" data-base-id="' + r.id + '" data-version-id="' + v.id + '">Add this edition</button>' +
+              "</div>";
+          }).join("") : '<div class="hint">No editions match this language filter.</div>';
+          versionsHtml = '<div class="versions-list">' + langBar + rowsHtml + "</div>";
+        }
+      }
+      var isExpansion = r.itemType === "boardgameexpansion";
+      card.innerHTML =
+        thumb +
+        '<div class="info">' +
+          '<div class="name-row"><strong>' + escapeHtml(r.name) + "</strong>" +
+          (r.yearpublished ? "<span>" + r.yearpublished + "</span>" : "") +
+          (isExpansion ? '<span class="expansion-badge">Expansion</span>' : "") +
+          "</div>" +
+          (isExpansion && r.expandsName ? '<div class="expands-note">Expands: <strong>' + escapeHtml(r.expandsName) + "</strong></div>" : "") +
+          '<div class="stat-line">' +
+            (r.rating ? "★ " + r.rating + " · " : "") +
+            (r.complexity ? weightWord(r.complexity) + " · " : "") +
+            (r.minplayers || r.maxplayers ? (r.minplayers || "?") + "–" + (r.maxplayers || "?") + "p" : "") +
+            (r.bestPlayers ? " · best: " + r.bestPlayers : "") +
+          "</div>" +
+          '<div class="row-actions">' +
+            '<button class="btn small primary" data-action="add-base" data-id="' + r.id + '">' + (isExpansion ? "Add expansion" : "Add base game") + "</button>" +
+            '<button class="btn small ghost" data-action="toggle-versions" data-id="' + r.id + '">' + (versions ? "Hide editions" : "See editions ▾") + "</button>" +
+          "</div>" +
+          versionsHtml +
+        "</div>";
+      host.appendChild(card);
+    });
+  }
+
+  function thingToGame(r, versionInfo) {
+    // The game's real title always comes from the base game (r.name), which BGG
+    // resolves reliably — a version's own "name" is frequently just a generic
+    // label like "English edition" and must never replace the title. Anything
+    // distinguishing about the specific edition is kept alongside it instead.
+    // When the auto-picked version is a non-English fallback (used only to borrow
+    // its box dimensions because no English version had any submitted), its name
+    // and cover art are foreign too — show neither, just quietly use its numbers.
+    var isForeignFallback = versionInfo && versionInfo.languages && versionInfo.languages.length &&
+      versionInfo.languages.indexOf("English") === -1;
+    var editionName = "";
+    if (versionInfo && !isForeignFallback) {
+      if (versionInfo.name && versionInfo.name.trim() && versionInfo.name.trim() !== r.name.trim()) {
+        editionName = versionInfo.name.trim();
+      } else if (versionInfo.editionLabel) {
+        editionName = versionInfo.editionLabel;
+      }
+    }
+    return {
+      id: uid("game"), status: "shelved", homeSlot: null, slotIndex: 0, checkedOutAt: null,
+      name: r.name || "",
+      editionName: editionName,
+      photo: (!isForeignFallback && versionInfo && (versionInfo.image || versionInfo.thumbnail)) || r.image || r.thumbnail || "",
+      rating: r.rating || 0, numRatings: r.numratings || 0, complexity: r.complexity || 0,
+      yearPublished: (versionInfo && versionInfo.yearpublished) || r.yearpublished || 0,
+      minPlayers: r.minplayers || 0, maxPlayers: r.maxplayers || 0,
+      bestPlayers: r.bestPlayers || "", playTime: r.playingtime || "",
+      category: (r.categories && r.categories[0]) || "Uncategorized",
+      bggCategories: r.categories || [], bggMechanics: r.mechanics || [],
+      publisher: (r.publishers && r.publishers[0]) || "", designer: (r.designers && r.designers[0]) || "",
+      bggRank: r.rank || null,
+      dims: versionInfo && versionInfo.length ? { a: versionInfo.length, b: versionInfo.width, c: versionInfo.depth } : { a: 0, b: 0, c: 0 },
+      orientation: "auto",
+      bggUrl: r.bggUrl || "",
+      isExpansion: r.itemType === "boardgameexpansion",
+      expandsOf: r.expandsName || "",
+      parentGameId: "",
+      storedInParent: false
+    };
+  }
+
+  function addGameToCollection(g) {
+    state.games.push(g);
+    quickPlace(g);
+    renderAll();
+    schedulePersist();
+    setTab("collection");
+  }
+
+  // ---------- rendering ----------
+
+  function renderBanner() {
+    document.getElementById("bannerHost").innerHTML = demoMode
+      ? '<div class="banner info"><span>Live demo with invented sample games, saved only in this browser. ' +
+        'BGG search needs the local server &mdash; <a href="https://github.com/krisrchesney/boxwatch">get it on GitHub</a>.</span> ' +
+        '<button class="btn small" data-action="reset-demo" style="margin-left:auto;">Reset demo</button></div>'
+      : "";
+  }
+
+  function weightClass(c) {
+    c = Number(c) || 0;
+    if (!c) return "";
+    if (c < 2) return "light";
+    if (c < 3.5) return "medium";
+    return "heavy";
+  }
+  function weightWord(c) {
+    var k = weightClass(c);
+    return k ? k.charAt(0).toUpperCase() + k.slice(1) : "—";
+  }
+
+  function slotLabel(slotId) {
+    if (!slotId) return "Unassigned";
+    var parts = slotId.split(":");
+    var unit = state.units.filter(function (u) { return u.id === parts[0]; })[0];
+    if (!unit) return "Unassigned";
+    var rc = parts[1].split("-");
+    return unit.label + " · row " + (Number(rc[0]) + 1) + ", col " + (Number(rc[1]) + 1);
+  }
+
+  function locationLabel(g) {
+    if (g.storedInParent) {
+      var parent = state.games.filter(function (o) { return o.id === g.parentGameId; })[0];
+      return "📦 stored inside " + (parent ? parent.name : "another game's box");
+    }
+    return slotLabel(g.homeSlot);
+  }
+
+  function renderCollection() {
+    var q = (document.getElementById("collectionSearch").value || "").toLowerCase();
+    var sortBy = document.getElementById("collectionSort").value;
+    var filterStatus = document.getElementById("collectionFilterStatus").value;
+
+    var games = state.games.filter(function (g) {
+      if (q && g.name.toLowerCase().indexOf(q) === -1) return false;
+      if (filterStatus === "shelved" && g.status !== "shelved") return false;
+      if (filterStatus === "checked_out" && g.status !== "checked_out") return false;
+      if (filterStatus === "unassigned" && (g.homeSlot || g.storedInParent)) return false;
+      return true;
+    });
+
+    if (sortBy === "name") games.sort(function (a, b) { return a.name.localeCompare(b.name); });
+    else if (sortBy === "rating") games.sort(function (a, b) { return (b.rating || 0) - (a.rating || 0); });
+    else if (sortBy === "complexity") games.sort(function (a, b) { return (a.complexity || 0) - (b.complexity || 0); });
+    else games.sort(function (a, b) {
+      if (!a.homeSlot && !b.homeSlot) return a.name.localeCompare(b.name);
+      if (!a.homeSlot) return 1;
+      if (!b.homeSlot) return -1;
+      if (a.homeSlot !== b.homeSlot) return a.homeSlot.localeCompare(b.homeSlot);
+      return (a.slotIndex || 0) - (b.slotIndex || 0);
+    });
+
+    document.getElementById("collectionCount").textContent =
+      state.games.length + " game" + (state.games.length === 1 ? "" : "s") +
+      (state.games.length ? " · " + state.games.filter(function (g) { return g.status === "checked_out"; }).length + " checked out" : "");
+
+    var grid = document.getElementById("cardGrid");
+    grid.innerHTML = "";
+    if (!games.length) {
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="big">&#127922;</div>' +
+        (state.games.length ? "No games match your filters." : "Your shelf is empty. Add your first game to get started.") + "</div>";
+      return;
+    }
+    games.forEach(function (g) {
+      var card = document.createElement("div");
+      card.className = "game-card" + (g.status === "checked_out" ? " checked-out" : "");
+      card.dataset.id = g.id;
+      card.dataset.action = "open-detail";
+      var photoHtml = g.photo ? '<img src="' + safeUrl(g.photo) + '" alt="" />' : (g.name || "?").charAt(0).toUpperCase();
+      card.innerHTML =
+        '<div class="card-photo">' + photoHtml +
+          (g.status === "checked_out" ? '<span class="status-flag">Checked out</span>' : "") +
+        "</div>" +
+        '<div class="card-body">' +
+          '<div class="card-title">' + escapeHtml(g.name) + "</div>" +
+          (g.editionName ? '<div class="expands-note">' + escapeHtml(g.editionName) + "</div>" : "") +
+          '<div class="card-meta-row">' +
+            (g.isExpansion ? '<span class="expansion-badge">Expansion</span>' : "") +
+            (g.rating ? '<span class="rating-chip">★ ' + Number(g.rating).toFixed(1) + "</span>" : "") +
+            (g.complexity ? '<span class="weight-chip ' + weightClass(g.complexity) + '">' + weightWord(g.complexity) + "</span>" : "") +
+            (g.minPlayers || g.maxPlayers ? "<span>" + (g.minPlayers || "?") + "–" + (g.maxPlayers || "?") + "p</span>" : "") +
+          "</div>" +
+          (g.isExpansion && g.expandsOf ? '<div class="expands-note">Expands: ' + escapeHtml(g.expandsOf) + "</div>" : "") +
+          '<div class="card-dims mono">' + (g.dims && (g.dims.a || g.dims.b || g.dims.c) ? g.dims.a + "″ × " + g.dims.b + "″ × " + g.dims.c + "″" :
+            '<a href="#" data-action="edit-game" data-id="' + g.id + '" style="color:var(--danger);">No dimensions &mdash; click to add</a> · ' +
+            '<a href="https://www.google.com/search?q=' + encodeURIComponent(g.name + " board game box dimensions") + '" target="_blank" rel="noopener">search web</a>') + "</div>" +
+          '<div class="card-slot">' + locationLabel(g) + "</div>" +
+          '<div class="card-actions">' +
+            '<button class="btn small" data-action="toggle-checkout" data-id="' + g.id + '">' + (g.status === "checked_out" ? "Check in" : "Check out") + "</button>" +
+            '<button class="btn small ghost" data-action="open-detail" data-id="' + g.id + '">Details</button>' +
+          "</div>" +
+        "</div>";
+      grid.appendChild(card);
+    });
+  }
+
+  function renderShelves() {
+    document.getElementById("groupTogetherToggle").checked = !!state.groupTogether;
+    var host = document.getElementById("shelfHost");
+    host.innerHTML = "";
+    if (!state.units.length) {
+      host.innerHTML = '<div class="empty-state"><div class="big">&#128209;</div>Add a shelving unit in Settings to start mapping your layout.</div>';
+      return;
+    }
+
+    state.units.forEach(function (u) {
+      var block = document.createElement("div");
+      block.className = "unit-block";
+      var preset = PRESETS[u.presetKey] || {};
+      block.innerHTML = '<div class="unit-head"><h3>' + escapeHtml(u.label) + '</h3><span class="tag mono">' +
+        u.cubeW + '″W × ' + u.cubeH + '″H × ' + u.cubeD + '″D per cube · ' + (preset.brand || "Custom") + "</span></div>";
+
+      var grid = document.createElement("div");
+      grid.className = "unit-grid";
+      var aspect = u.cubeW / u.cubeH;
+      grid.style.gridTemplateColumns = "repeat(" + u.cols + ", 1fr)";
+      for (var r = 0; r < u.rows; r++) {
+        for (var c = 0; c < u.cols; c++) {
+          var slotId = u.id + ":" + r + "-" + c;
+          var occupants = state.games.filter(function (g) { return g.homeSlot === slotId; })
+            .sort(function (a, b) { return (a.slotIndex || 0) - (b.slotIndex || 0); });
+          var box = document.createElement("div");
+          box.className = "slot-box";
+          box.style.aspectRatio = aspect.toFixed(3);
+          var usedWidth = 0;
+          var innerHtml = "";
+          occupants.forEach(function (g) {
+            var spine = fitOrientation(g.dims || {}, { h: u.cubeH, d: u.cubeD }, g.orientation) || 1;
+            usedWidth += spine;
+            var pct = Math.max(6, (spine / u.cubeW) * 100);
+            var color = categoryColor(g.category);
+            var insideCount = state.games.filter(function (o) { return o.storedInParent && o.parentGameId === g.id; }).length;
+            var label = escapeHtml(shortName(g.name)) + (insideCount ? ' <span class="inside-badge">(+' + insideCount + ")</span>" : "");
+            var titleText = g.name + (insideCount ? " (+" + insideCount + " expansion" + (insideCount === 1 ? "" : "s") + " stored inside)" : "");
+            innerHtml += '<div class="spine' + (g.status === "checked_out" ? " out" : "") + '" style="flex-basis:' + pct + '%; background:' + (g.status === "checked_out" ? "transparent" : color) + ';" data-action="open-detail" data-id="' + g.id + '" title="' + escapeHtml(titleText) + '">' + label + "</div>";
+          });
+          if (!occupants.length) innerHtml = '<div class="slot-empty-note">empty</div>';
+          box.innerHTML = innerHtml + '<div class="slot-cap">' + Math.max(0, u.cubeW - usedWidth).toFixed(0) + '″ free</div>';
+          grid.appendChild(box);
+        }
+      }
+      block.appendChild(grid);
+      host.appendChild(block);
+    });
+  }
+
+  function shortName(n) { return n && n.length > 16 ? n.slice(0, 14) + "…" : n; }
+
+  var CATEGORY_COLORS = {
+    Strategy: "#2F7A63", Family: "#B8842A", Party: "#A8452F", Cooperative: "#3A6EA8",
+    Wargame: "#5C4A8A", Abstract: "#4A4640", "Card Game": "#8A6D3A", "Children's": "#C25B8A", Other: "#6B6357"
+  };
+  function categoryColor(cat) {
+    if (!cat) return CATEGORY_COLORS.Other;
+    if (CATEGORY_COLORS[cat]) return CATEGORY_COLORS[cat];
+    // Categories are now free text (real BGG categories, not a fixed list) — hash
+    // anything uncurated into a stable, distinct hue rather than collapsing to grey.
+    var hash = 0;
+    for (var i = 0; i < cat.length; i++) { hash = ((hash << 5) - hash + cat.charCodeAt(i)) | 0; }
+    return "hsl(" + (Math.abs(hash) % 360) + ", 42%, 38%)";
+  }
+
+  function renderPending() {
+    var host = document.getElementById("pendingList");
+    host.innerHTML = "";
+    if (!state.pending.length) return;
+    state.pending.slice().reverse().forEach(function (p) {
+      var row = document.createElement("div");
+      row.className = "pending-item";
+      row.innerHTML =
+        '<img src="' + safeUrl(p.photo) + '" alt="" />' +
+        '<div class="meta"><div class="id mono">' + p.id + "</div><div>" + new Date(p.addedAt).toLocaleString() + "</div></div>" +
+        '<div class="pending-actions">' +
+          '<button class="btn small" data-action="save-pending" data-id="' + p.id + '">Save photo</button>' +
+          '<button class="btn small" data-action="enter-details" data-id="' + p.id + '">Enter details</button>' +
+          '<button class="btn small danger" data-action="remove-pending" data-id="' + p.id + '">Remove</button>' +
+        "</div>";
+      host.appendChild(row);
+    });
+  }
+
+  function renderSettings() {
+    var unitList = document.getElementById("unitList");
+    unitList.innerHTML = "";
+    state.units.forEach(function (u) {
+      var row = document.createElement("div");
+      row.className = "unit-row";
+      row.innerHTML =
+        '<div style="flex:1;"><strong>' + escapeHtml(u.label) + '</strong> <span class="mono" style="color:var(--ink-faint); font-size:12px;">' +
+        u.rows + '×' + u.cols + " · " + u.cubeW + "″×" + u.cubeH + "″×" + u.cubeD + "″</span></div>" +
+        '<button class="btn small ghost" data-action="remove-unit" data-id="' + u.id + '">Remove</button>';
+      unitList.appendChild(row);
+    });
+
+    var presetSelect = document.getElementById("presetSelect");
+    if (!presetSelect.dataset.filled) {
+      Object.keys(PRESETS).forEach(function (key) {
+        var opt = document.createElement("option");
+        opt.value = key;
+        opt.textContent = PRESETS[key].brand + " — " + PRESETS[key].label;
+        presetSelect.appendChild(opt);
+      });
+      presetSelect.dataset.filled = "1";
+      syncCustomDimsRow();
+    }
+
+    var priorityList = document.getElementById("priorityList");
+    priorityList.innerHTML = "";
+    state.priorityOrder.forEach(function (f, i) {
+      var row = document.createElement("div");
+      row.className = "priority-row";
+      row.innerHTML =
+        '<span class="rank">#' + (i + 1) + "</span>" +
+        '<span class="name">' + PRIORITY_FIELDS[f].label + "</span>" +
+        '<button class="btn small ghost" data-action="priority-up" data-field="' + f + '" ' + (i === 0 ? "disabled" : "") + ">↑</button>" +
+        '<button class="btn small ghost" data-action="priority-down" data-field="' + f + '" ' + (i === state.priorityOrder.length - 1 ? "disabled" : "") + ">↓</button>";
+      priorityList.appendChild(row);
+    });
+  }
+
+  function syncCustomDimsRow() {
+    var key = document.getElementById("presetSelect").value;
+    var preset = PRESETS[key];
+    var row = document.getElementById("customDimsRow");
+    row.hidden = !preset.adjustable;
+    if (preset.adjustable) {
+      document.getElementById("unitRows").value = preset.rows;
+      document.getElementById("unitCols").value = preset.cols;
+      document.getElementById("unitCubeW").value = preset.cubeW;
+      document.getElementById("unitCubeH").value = preset.cubeH;
+      document.getElementById("unitCubeD").value = preset.cubeD;
+    }
+  }
+
+  function sortVersionsByYear(versions) {
+    return versions.slice().sort(function (a, b) {
+      var ya = parseInt(a.yearpublished, 10); if (isNaN(ya)) ya = -Infinity;
+      var yb = parseInt(b.yearpublished, 10); if (isNaN(yb)) yb = -Infinity;
+      return yb - ya; // most recent first
+    });
+  }
+
+  function collectLanguages(versions) {
+    var seen = {};
+    versions.forEach(function (v) { (v.languages || []).forEach(function (l) { seen[l] = true; }); });
+    return Object.keys(seen).sort();
+  }
+
+  function filterVersionsByLanguage(versions, lang) {
+    if (lang === "__all__") return versions;
+    if (lang === "__unspecified__") return versions.filter(function (v) { return !(v.languages && v.languages.length); });
+    return versions.filter(function (v) { return v.languages && v.languages.indexOf(lang) !== -1; });
+  }
+
+  function languageSelectHtml(versions, selected, extraAttrs) {
+    var langs = collectLanguages(versions);
+    var hasUnspecified = versions.some(function (v) { return !(v.languages && v.languages.length); });
+    var opts = '<option value="__all__"' + (selected === "__all__" ? " selected" : "") + '>All languages</option>' +
+      langs.map(function (l) { return '<option value="' + escapeHtml(l) + '"' + (l === selected ? " selected" : "") + '>' + escapeHtml(l) + "</option>"; }).join("") +
+      (hasUnspecified ? '<option value="__unspecified__"' + (selected === "__unspecified__" ? " selected" : "") + '>Unspecified</option>' : "");
+    return '<select ' + extraAttrs + ' style="padding:5px 8px; border-radius:6px; border:1px solid var(--line-strong); background:var(--surface-raised); color:var(--ink); font-size:12.5px;">' + opts + "</select>";
+  }
+
+  // URLs end up in src/href attributes, and they can come from an imported backup
+  // file, so only http(s) links and inline images are allowed through (no javascript:).
+  function safeUrl(u) {
+    u = String(u == null ? "" : u).trim();
+    return /^(https?:\/\/|data:image\/(png|jpe?g|webp|gif);base64,)/i.test(u) ? escapeHtml(u) : "";
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function renderAll() {
+    renderBanner();
+    renderCollection();
+    renderShelves();
+    renderPending();
+    renderSettings();
+  }
+
+  // ---------- tab switching ----------
+  function setTab(tab) {
+    activeTab = tab;
+    ["collection", "shelves", "add", "settings"].forEach(function (t) {
+      document.getElementById("view-" + t).hidden = t !== tab;
+    });
+    document.querySelectorAll(".nav-btn, .bottom-tabs button").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.tab === tab);
+    });
+  }
+
+  // ---------- detail drawer ----------
+  function openDetail(gameId) {
+    var g = state.games.filter(function (x) { return x.id === gameId; })[0];
+    if (!g) return;
+    openDrawerGameId = gameId;
+    var host = document.getElementById("drawerHost");
+    var backdrop = document.createElement("div");
+    backdrop.className = "drawer-backdrop";
+    backdrop.innerHTML =
+      '<div class="drawer">' +
+        '<button class="close-x" data-action="close-drawer">&times;</button>' +
+        '<h2>' + escapeHtml(g.name) + "</h2>" +
+        (g.editionName ? '<div style="color:var(--ink-soft); font-size:13px;">' + escapeHtml(g.editionName) + "</div>" : "") +
+        '<div style="color:var(--ink-soft); font-size:12.5px;">' + (g.yearPublished || "") + (g.category ? " · " + g.category : "") + "</div>" +
+        (g.photo ? '<img class="drawer-photo" src="' + safeUrl(g.photo) + '" />' : "") +
+        '<div class="drawer-stats">' +
+          '<div><div class="k">Rating</div><div>' + (g.rating ? "★ " + g.rating : "—") + " (" + (g.numRatings || 0) + " ratings)</div></div>" +
+          '<div><div class="k">Complexity</div><div>' + (g.complexity ? g.complexity + " / 5 — " + weightWord(g.complexity) : "—") + "</div></div>" +
+          '<div><div class="k">Players</div><div>' + (g.minPlayers || "?") + "–" + (g.maxPlayers || "?") + (g.bestPlayers ? " (best: " + g.bestPlayers + ")" : "") + "</div></div>" +
+          '<div><div class="k">Play time</div><div>' + (g.playTime || "—") + " min</div></div>" +
+          '<div><div class="k">Dimensions</div><div>' + (g.dims && (g.dims.a || g.dims.b || g.dims.c) ? g.dims.a + "″ × " + g.dims.b + "″ × " + g.dims.c + "″" :
+            '<a href="https://www.google.com/search?q=' + encodeURIComponent(g.name + " board game box dimensions") + '" target="_blank" rel="noopener">search web ↗</a>') + "</div></div>" +
+          '<div><div class="k">Location</div><div>' + locationLabel(g) + "</div></div>" +
+          (g.bggRank ? '<div><div class="k">BGG rank</div><div>#' + g.bggRank + "</div></div>" : "") +
+          (g.publisher ? '<div><div class="k">Publisher</div><div>' + escapeHtml(g.publisher) + "</div></div>" : "") +
+          (g.designer ? '<div><div class="k">Designer</div><div>' + escapeHtml(g.designer) + "</div></div>" : "") +
+        "</div>" +
+        (g.bggMechanics && g.bggMechanics.length ? '<div style="font-size:12.5px; color:var(--ink-soft); margin-bottom:10px;">Mechanisms: ' + escapeHtml(g.bggMechanics.slice(0, 4).join(", ")) + "</div>" : "") +
+        (g.bggUrl ? '<div style="margin-bottom:10px;"><a href="' + safeUrl(g.bggUrl) + '" target="_blank" rel="noopener">View on BoardGameGeek →</a></div>' : "") +
+        '<div class="drawer-actions">' +
+          '<button class="btn primary small" data-action="toggle-checkout" data-id="' + g.id + '">' + (g.status === "checked_out" ? "Check in" : "Check out") + "</button>" +
+          '<button class="btn small" data-action="edit-game" data-id="' + g.id + '">Edit</button>' +
+          '<button class="btn small" data-action="move-game" data-id="' + g.id + '">Re-place on shelf</button>' +
+          '<button class="btn small danger" data-action="remove-game" data-id="' + g.id + '">Remove</button>' +
+        "</div>" +
+      "</div>";
+    host.innerHTML = "";
+    host.appendChild(backdrop);
+    backdrop.addEventListener("click", function (e) { if (e.target === backdrop) closeDrawer(); });
+  }
+  function closeDrawer() { document.getElementById("drawerHost").innerHTML = ""; openDrawerGameId = null; }
+
+  // ---------- form ----------
+  function populateParentGameSelect(selectedId) {
+    var sel = document.getElementById("f_parentGameId");
+    var currentId = document.getElementById("f_id").value;
+    sel.innerHTML = '<option value="">— none —</option>';
+    state.games.filter(function (g) { return !g.isExpansion && g.id !== currentId; }).forEach(function (g) {
+      var opt = document.createElement("option");
+      opt.value = g.id;
+      opt.textContent = g.name;
+      sel.appendChild(opt);
+    });
+    sel.value = selectedId || "";
+  }
+
+  function extractBggId(url) {
+    var m = /\/(\d+)(?:[/-]|$)/.exec((url || "").trim());
+    return m ? m[1] : null;
+  }
+
+  function syncExpansionFields() {
+    var checked = document.getElementById("f_isExpansion").checked;
+    document.getElementById("expansionFields").hidden = !checked;
+    if (checked) populateParentGameSelect(document.getElementById("f_parentGameId").value);
+  }
+
+  function fillForm(g, pendingId, photo) {
+    document.getElementById("editEditionsHost").innerHTML = "";
+    editFormVersions = []; editFormBestGuessId = null; editFormLangFilter = "__all__";
+    document.getElementById("f_id").value = g ? g.id : "";
+    document.getElementById("f_pendingId").value = pendingId || "";
+    document.getElementById("f_photo").value = (g && g.photo) || photo || "";
+    document.getElementById("f_name").value = (g && g.name) || "";
+    document.getElementById("f_editionName").value = (g && g.editionName) || "";
+    document.getElementById("f_rating").value = (g && g.rating) || "";
+    document.getElementById("f_numRatings").value = (g && g.numRatings) || "";
+    document.getElementById("f_complexity").value = (g && g.complexity) || "";
+    document.getElementById("f_year").value = (g && g.yearPublished) || "";
+    document.getElementById("f_minP").value = (g && g.minPlayers) || "";
+    document.getElementById("f_maxP").value = (g && g.maxPlayers) || "";
+    document.getElementById("f_bestP").value = (g && g.bestPlayers) || "";
+    document.getElementById("f_playTime").value = (g && g.playTime) || "";
+    document.getElementById("f_category").value = (g && g.category) || "Strategy";
+    document.getElementById("f_dimA").value = (g && g.dims && g.dims.a) || "";
+    document.getElementById("f_dimB").value = (g && g.dims && g.dims.b) || "";
+    document.getElementById("f_dimC").value = (g && g.dims && g.dims.c) || "";
+    document.getElementById("f_orientation").value = (g && g.orientation) || "auto";
+    document.getElementById("f_bggUrl").value = (g && g.bggUrl) || "";
+    document.getElementById("f_isExpansion").checked = !!(g && g.isExpansion);
+    document.getElementById("f_expandsOf").value = (g && g.expandsOf) || "";
+    document.getElementById("f_storedInParent").checked = !!(g && g.storedInParent);
+    populateParentGameSelect(g && g.parentGameId);
+    syncExpansionFields();
+    document.getElementById("formTitle").textContent = g ? "✏️ Edit game details" : "✏️ Add game details manually";
+  }
+
+  function clearForm() { fillForm(null, "", ""); }
+
+  function submitForm(e) {
+    e.preventDefault();
+    var id = document.getElementById("f_id").value;
+    var pendingId = document.getElementById("f_pendingId").value;
+    var g = id ? state.games.filter(function (x) { return x.id === id; })[0] : null;
+    var isNew = !g;
+    if (!g) {
+      g = { id: uid("game"), status: "shelved", homeSlot: null, slotIndex: 0, checkedOutAt: null };
+      state.games.push(g);
+    }
+    g.photo = document.getElementById("f_photo").value || g.photo || "";
+    g.name = document.getElementById("f_name").value.trim();
+    g.editionName = document.getElementById("f_editionName").value.trim();
+    g.rating = parseFloat(document.getElementById("f_rating").value) || 0;
+    g.numRatings = parseInt(document.getElementById("f_numRatings").value, 10) || 0;
+    g.complexity = parseFloat(document.getElementById("f_complexity").value) || 0;
+    g.yearPublished = parseInt(document.getElementById("f_year").value, 10) || 0;
+    g.minPlayers = parseInt(document.getElementById("f_minP").value, 10) || 0;
+    g.maxPlayers = parseInt(document.getElementById("f_maxP").value, 10) || 0;
+    g.bestPlayers = document.getElementById("f_bestP").value.trim();
+    g.playTime = document.getElementById("f_playTime").value.trim();
+    g.category = document.getElementById("f_category").value;
+    g.dims = {
+      a: parseFloat(document.getElementById("f_dimA").value) || 0,
+      b: parseFloat(document.getElementById("f_dimB").value) || 0,
+      c: parseFloat(document.getElementById("f_dimC").value) || 0
+    };
+    g.bggUrl = document.getElementById("f_bggUrl").value.trim();
+    g.orientation = document.getElementById("f_orientation").value;
+    g.isExpansion = document.getElementById("f_isExpansion").checked;
+    g.expandsOf = document.getElementById("f_expandsOf").value.trim();
+    g.parentGameId = g.isExpansion ? document.getElementById("f_parentGameId").value : "";
+    g.storedInParent = g.isExpansion && !!g.parentGameId && document.getElementById("f_storedInParent").checked;
+
+    if (g.storedInParent) { g.homeSlot = null; }
+    else if (isNew || !g.homeSlot) { quickPlace(g); }
+
+    if (pendingId) state.pending = state.pending.filter(function (p) { return p.id !== pendingId; });
+
+    clearForm();
+    renderAll();
+    schedulePersist();
+    setTab("collection");
+  }
+
+  // ---------- image capture ----------
+  function handlePhotoFile(file) {
+    if (!file) return;
+    var img = new Image();
+    var reader = new FileReader();
+    reader.onload = function () {
+      img.onload = function () {
+        var maxDim = 640;
+        var scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        var canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        var dataUri = canvas.toDataURL("image/jpeg", 0.72);
+        state.pending.push({ id: uid("pend"), photo: dataUri, addedAt: new Date().toISOString() });
+        renderPending();
+        schedulePersist();
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function downloadBlob(filename, blob) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+
+  function dataUriToBlob(dataUri) {
+    var parts = dataUri.split(",");
+    var mime = parts[0].match(/:(.*?);/)[1];
+    var bin = atob(parts[1]);
+    var arr = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  }
+
+  // ---------- events ----------
+  function wireEvents() {
+    document.querySelectorAll(".nav-btn, .bottom-tabs button").forEach(function (b) {
+      b.addEventListener("click", function () { setTab(b.dataset.tab); });
+    });
+    document.querySelectorAll("[data-goto-tab]").forEach(function (b) {
+      b.addEventListener("click", function () { setTab(b.dataset.gotoTab); });
+    });
+
+    document.getElementById("collectionSearch").addEventListener("input", renderCollection);
+    document.getElementById("collectionSort").addEventListener("change", renderCollection);
+    document.getElementById("collectionFilterStatus").addEventListener("change", renderCollection);
+
+    document.getElementById("photoInput").addEventListener("change", function (e) {
+      handlePhotoFile(e.target.files[0]);
+      e.target.value = "";
+    });
+
+    document.getElementById("runSearchBtn").addEventListener("click", runSearch);
+    document.getElementById("searchQueryInput").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); runSearch(); }
+    });
+
+    document.getElementById("gameForm").addEventListener("submit", submitForm);
+    document.getElementById("formCancelBtn").addEventListener("click", clearForm);
+    document.getElementById("f_isExpansion").addEventListener("change", syncExpansionFields);
+
+    document.getElementById("browseEditionsBtn").addEventListener("click", function () {
+      var bggId = extractBggId(document.getElementById("f_bggUrl").value);
+      var host = document.getElementById("editEditionsHost");
+      if (demoMode) {
+        host.innerHTML = '<div class="hint" style="margin-top:8px;">' + escapeHtml(DEMO_SEARCH_MSG) + "</div>";
+        return;
+      }
+      if (!bggId) {
+        host.innerHTML = '<div class="hint" style="margin-top:8px;">No BGG link on file for this game — add one above (or find it via Search) to browse its editions.</div>';
+        return;
+      }
+      var btn = this;
+      btn.disabled = true;
+      btn.textContent = "Loading…";
+      fetch("/api/versions?id=" + encodeURIComponent(bggId)).then(function (r) { return r.json(); }).then(function (data) {
+        btn.disabled = false;
+        btn.textContent = "Browse editions";
+        if (!data.ok) { host.innerHTML = '<div class="hint" style="margin-top:8px;">Couldn\'t load editions: ' + escapeHtml(data.error || "unknown error") + "</div>"; return; }
+        if (!data.versions.length) { host.innerHTML = '<div class="hint" style="margin-top:8px;">No separate editions listed on BGG for this game.</div>'; return; }
+        editFormVersions = data.versions;
+        editFormBestGuessId = data.bestGuessId;
+        var langs = collectLanguages(editFormVersions);
+        editFormLangFilter = langs.indexOf("English") !== -1 ? "English" : "__all__";
+        renderEditFormEditions();
+      }).catch(function (err) {
+        btn.disabled = false;
+        btn.textContent = "Browse editions";
+        host.innerHTML = '<div class="hint" style="margin-top:8px;">Couldn\'t reach the local server: ' + escapeHtml(err.message) + "</div>";
+      });
+    });
+
+    document.getElementById("groupTogetherToggle").addEventListener("change", function (e) {
+      state.groupTogether = e.target.checked;
+      schedulePersist();
+    });
+    document.getElementById("autoArrangeBtn").addEventListener("click", function () {
+      if (!confirm("Re-arrange the entire shelf layout based on current priorities? This may move already-shelved games.")) return;
+      var unplaced = autoArrangeAll();
+      renderAll();
+      schedulePersist();
+      if (unplaced) alert(unplaced + " game(s) didn't fit anywhere and are unassigned. Add more shelf space in Settings.");
+    });
+
+    document.getElementById("presetSelect").addEventListener("change", syncCustomDimsRow);
+
+    document.getElementById("addUnitBtn").addEventListener("click", function () {
+      var key = document.getElementById("presetSelect").value;
+      var preset = PRESETS[key];
+      var label = document.getElementById("unitLabel").value.trim() || preset.label;
+      var unit = { id: uid("unit"), presetKey: key, label: label, rows: preset.rows, cols: preset.cols, cubeW: preset.cubeW, cubeH: preset.cubeH, cubeD: preset.cubeD };
+      if (preset.adjustable) {
+        unit.rows = parseInt(document.getElementById("unitRows").value, 10) || preset.rows;
+        unit.cols = parseInt(document.getElementById("unitCols").value, 10) || preset.cols;
+        unit.cubeW = parseFloat(document.getElementById("unitCubeW").value) || preset.cubeW;
+        unit.cubeH = parseFloat(document.getElementById("unitCubeH").value) || preset.cubeH;
+        unit.cubeD = parseFloat(document.getElementById("unitCubeD").value) || preset.cubeD;
+      }
+      state.units.push(unit);
+      document.getElementById("unitLabel").value = "";
+      renderAll();
+      schedulePersist();
+    });
+
+    document.getElementById("exportBtn").addEventListener("click", function () {
+      var data = JSON.stringify(state, null, 2);
+      downloadBlob("boxwatch-backup.json", new Blob([data], { type: "application/json" }));
+    });
+    document.getElementById("importInput").addEventListener("change", function (e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        try {
+          var imported = normalize(JSON.parse(reader.result));
+          if (!confirm("Replace your current collection and shelves with this backup?")) return;
+          state = imported;
+          renderAll();
+          schedulePersist();
+        } catch (err) { alert("That file doesn't look like a valid Boxwatch backup."); }
+      };
+      reader.readAsText(file);
+      e.target.value = "";
+    });
+
+    document.addEventListener("change", function (e) {
+      var el = e.target.closest('[data-action="filter-language"]');
+      if (!el) return;
+      if (el.dataset.scope === "search") {
+        languageFilterByBase[el.dataset.baseId] = el.value;
+        renderSearchResults();
+      } else if (el.dataset.scope === "edit") {
+        editFormLangFilter = el.value;
+        renderEditFormEditions();
+      }
+    });
+
+    document.addEventListener("click", function (e) {
+      var el = e.target.closest("[data-action]");
+      if (!el) return;
+      if (el.tagName === "A" && el.getAttribute("href") === "#") e.preventDefault();
+      var action = el.dataset.action;
+      var id = el.dataset.id;
+
+      if (action === "reset-demo") {
+        if (!confirm("Reset the demo back to its sample games?")) return;
+        try { localStorage.removeItem(DEMO_KEY); } catch (err) {}
+        location.reload();
+        return;
+      }
+      if (action === "open-detail") { openDetail(id); return; }
+      if (action === "close-drawer") { closeDrawer(); return; }
+
+      if (action === "toggle-checkout") {
+        var g = state.games.filter(function (x) { return x.id === id; })[0];
+        if (!g) return;
+        if (g.status === "checked_out") { g.status = "shelved"; g.checkedOutAt = null; }
+        else { g.status = "checked_out"; g.checkedOutAt = new Date().toISOString(); }
+        renderAll();
+        if (openDrawerGameId === id) openDetail(id);
+        schedulePersist();
+        return;
+      }
+      if (action === "edit-game") {
+        var g2 = state.games.filter(function (x) { return x.id === id; })[0];
+        closeDrawer();
+        fillForm(g2, "", "");
+        setTab("add");
+        return;
+      }
+      if (action === "move-game") {
+        var g3 = state.games.filter(function (x) { return x.id === id; })[0];
+        if (!g3) return;
+        var placed = quickPlace(g3);
+        renderAll();
+        closeDrawer();
+        schedulePersist();
+        if (!placed) alert("No shelf currently has room for this box. Add more shelving in Settings.");
+        return;
+      }
+      if (action === "remove-game") {
+        if (!confirm("Remove this game from your collection?")) return;
+        state.games = state.games.filter(function (x) { return x.id !== id; });
+        closeDrawer();
+        renderAll();
+        schedulePersist();
+        return;
+      }
+      if (action === "remove-unit") {
+        if (!confirm("Remove this shelving unit? Games homed there will become unassigned.")) return;
+        var removedUnit = id;
+        state.games.forEach(function (g4) { if (g4.homeSlot && g4.homeSlot.indexOf(removedUnit + ":") === 0) g4.homeSlot = null; });
+        state.units = state.units.filter(function (u) { return u.id !== id; });
+        renderAll();
+        schedulePersist();
+        return;
+      }
+      if (action === "priority-up" || action === "priority-down") {
+        var field = el.dataset.field;
+        var idx = state.priorityOrder.indexOf(field);
+        var swapWith = action === "priority-up" ? idx - 1 : idx + 1;
+        if (swapWith < 0 || swapWith >= state.priorityOrder.length) return;
+        var tmp = state.priorityOrder[idx];
+        state.priorityOrder[idx] = state.priorityOrder[swapWith];
+        state.priorityOrder[swapWith] = tmp;
+        renderSettings();
+        schedulePersist();
+        return;
+      }
+      if (action === "save-pending") {
+        var p = state.pending.filter(function (x) { return x.id === id; })[0];
+        if (!p) return;
+        downloadBlob("boxwatch-" + id + ".jpg", dataUriToBlob(p.photo));
+        return;
+      }
+      if (action === "enter-details") {
+        var p2 = state.pending.filter(function (x) { return x.id === id; })[0];
+        if (!p2) return;
+        fillForm(null, p2.id, p2.photo);
+        setTab("add");
+        return;
+      }
+      if (action === "remove-pending") {
+        state.pending = state.pending.filter(function (x) { return x.id !== id; });
+        renderPending();
+        schedulePersist();
+        return;
+      }
+
+      if (action === "add-base") {
+        var r = lastResults.filter(function (x) { return x.id === id; })[0];
+        if (!r) return;
+        var originalLabel = el.textContent;
+        el.disabled = true;
+        el.textContent = "Adding…";
+        fetch("/api/versions?id=" + encodeURIComponent(id)).then(function (resp) { return resp.json(); }).then(function (data) {
+          var versions = (data.ok && data.versions) ? data.versions : [];
+          var best = data.ok && data.bestGuessId ? versions.filter(function (v) { return v.id === data.bestGuessId; })[0] : null;
+          addGameToCollection(thingToGame(r, best || null));
+        }).catch(function () {
+          addGameToCollection(thingToGame(r, null));
+        }).finally(function () {
+          el.disabled = false;
+          el.textContent = originalLabel;
+        });
+        return;
+      }
+      if (action === "toggle-versions") {
+        if (expandedVersions[id]) {
+          delete expandedVersions[id];
+          renderSearchResults();
+          return;
+        }
+        el.disabled = true;
+        el.textContent = "Loading…";
+        fetch("/api/versions?id=" + encodeURIComponent(id)).then(function (r) { return r.json(); }).then(function (data) {
+          expandedVersions[id] = (data.ok && data.versions) ? data.versions : [];
+          bestGuessByBase[id] = data.ok ? data.bestGuessId : null;
+          var langs = collectLanguages(expandedVersions[id]);
+          languageFilterByBase[id] = langs.indexOf("English") !== -1 ? "English" : "__all__";
+          renderSearchResults();
+        }).catch(function () {
+          expandedVersions[id] = [];
+          renderSearchResults();
+        });
+        return;
+      }
+      if (action === "add-version") {
+        var baseId = el.dataset.baseId, versionId = el.dataset.versionId;
+        var rb = lastResults.filter(function (x) { return x.id === baseId; })[0];
+        var v = (expandedVersions[baseId] || []).filter(function (x) { return x.id === versionId; })[0];
+        if (!rb) return;
+        addGameToCollection(thingToGame(rb, v));
+        return;
+      }
+      if (action === "apply-edition-to-form") {
+        var baseName = document.getElementById("f_name").value.trim();
+        var vName = el.dataset.name || "";
+        var vEditionLabel = el.dataset.editionLabel || "";
+        // Same precedence as thingToGame: a version's own name is only useful when it
+        // actually differs from the game's title — otherwise the real distinguishing
+        // text (e.g. "English deluxe edition") lives in editionLabel instead.
+        document.getElementById("f_editionName").value = (vName && vName !== baseName) ? vName : vEditionLabel;
+        document.getElementById("f_dimA").value = el.dataset.a || "";
+        document.getElementById("f_dimB").value = el.dataset.b || "";
+        document.getElementById("f_dimC").value = el.dataset.c || "";
+        if (el.dataset.photo) document.getElementById("f_photo").value = el.dataset.photo;
+        document.getElementById("editEditionsHost").innerHTML = '<div class="hint" style="margin-top:8px;">Applied — dimensions' + (el.dataset.photo ? " and cover" : "") + ' updated below. Click Save game to keep it.</div>';
+        return;
+      }
+    });
+  }
+
+  // ---------- init ----------
+  function init() {
+    wireEvents();
+    setTab("collection");
+    fetchState().then(function (data) {
+      state = normalize(data);
+      if (freshDemo) autoArrangeAll();
+      renderAll();
+      setSyncLabel(true, demoMode ? "Demo (saved in this browser)" : "Saved");
+    }).catch(function () {
+      setSyncLabel(false, "Couldn't reach local server");
+    });
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+</script>
+</body>
+</html>
