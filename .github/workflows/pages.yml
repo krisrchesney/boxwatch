@@ -23,6 +23,10 @@ concurrency:
 
 jobs:
   deploy:
+    # Free GitHub plans can't serve Pages from a private repo, so skip (rather than
+    # fail) until the repo is made public. After flipping it public, run this
+    # workflow once from the Actions tab (Run workflow) to publish the demo.
+    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
