@@ -130,7 +130,7 @@
   .unit-head .tag { font-size: 11.5px; color: var(--ink-faint); }
   .unit-grid { display: grid; gap: 8px; }
   .slot-box { container-type: inline-size; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); min-height: 64px; position: relative; overflow: hidden; }
-  .slot-row { position: absolute; inset: 5px 5px 15px 5px; display: flex; align-items: flex-end; gap: 2px; }
+  .slot-row { position: absolute; inset: 5px 5px 15px 5px; display: flex; align-items: flex-end; gap: 0; }
   .slot-empty-note { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10.5px; color: var(--ink-faint); pointer-events: none; }
   .spine { border-radius: 3px; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; font-size: 13px; line-height: 1.15; font-weight: 700; color: #fff; padding: 3px 1px; cursor: pointer; overflow: hidden; min-width: 14px; border: 1px solid rgba(0,0,0,0.15); }
   .prio-row { display: flex; flex-wrap: wrap; gap: 5px; }
@@ -141,11 +141,37 @@
   .prio.heavy { background: color-mix(in srgb, var(--heavy-chip) 18%, transparent); }
   .card-orient { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink-faint); }
   .card-orient select { flex: 1; min-width: 0; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--surface-raised); color: var(--ink); font-size: 12px; }
-  .stack { align-self: stretch; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 14px; }
+  .stack { position: relative; z-index: 1; align-self: stretch; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 14px; }
   .stack .spine { flex: 0 0 auto; width: 100%; min-height: 8px; }
   .spine.flat { writing-mode: horizontal-tb; padding: 0 5px; }
   /* The whole title, cut with an ellipsis only where the box actually runs out of room. */
   .spine-text { display: block; min-width: 0; min-height: 0; max-width: 100%; max-height: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* Boxes tucked behind the front row: lighter, dashed, a little higher, numbered (names are mostly hidden). */
+  .back-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+  .spine.back { position: absolute; bottom: 5px; pointer-events: auto; justify-content: flex-start; padding: 3px 0; filter: brightness(1.3); border-style: dashed; min-width: 0; }
+  .spine.back.out { filter: none; }
+  .back-badge { writing-mode: horizontal-tb; width: 100%; max-width: 16px; aspect-ratio: 1; border-radius: 50%; background: #fff; color: #222; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .slot-behind { font-size: 9.5px; color: var(--accent, var(--ink-soft)); position: absolute; bottom: 2px; left: 6px; font-family: var(--font-mono); }
+  .slot-box.clickable { cursor: pointer; }
+  .slot-box.clickable:hover { border-color: var(--ink-faint); }
+  .drawer-backdrop.center { justify-content: center; align-items: center; z-index: 50; }
+  .cube-modal { background: var(--surface-raised); border-radius: 14px; padding: 22px; width: min(620px, 94%); max-height: 92vh; overflow-y: auto; position: relative; box-shadow: 0 12px 40px rgba(0,0,0,0.25); }
+  .cube-modal h2 { font-size: 19px; margin-bottom: 4px; }
+  .cube-modal .close-x { position: absolute; top: 12px; right: 14px; background: none; border: none; font-size: 20px; color: var(--ink-faint); cursor: pointer; }
+  .plan-wrap { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 14px; align-items: flex-start; }
+  .plan-frame { position: relative; flex: none; padding: 18px 0; }
+  .plan-frame .edge { position: absolute; left: 0; right: 0; text-align: center; font-size: 10.5px; color: var(--ink-faint); letter-spacing: 0.05em; }
+  .plan-area { position: relative; background: var(--paper); border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; }
+  .plan-box { position: absolute; border-radius: 3px; border: 1px solid rgba(0,0,0,0.2); color: #fff; font-size: 11.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; overflow: hidden; box-sizing: border-box; cursor: pointer; }
+  .plan-box span { writing-mode: vertical-rl; max-height: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 3px 0; }
+  .plan-box.back { filter: brightness(1.3); border-style: dashed; }
+  .plan-list { flex: 1; min-width: 200px; font-size: 13px; }
+  .plan-list h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); margin: 0 0 6px; }
+  .plan-list ul { list-style: none; margin: 0 0 14px; padding: 0; }
+  .plan-list li { padding: 3px 0; }
+  .plan-list a { cursor: pointer; }
+  .plan-list .num { display: inline-flex; width: 17px; height: 17px; border-radius: 50%; background: var(--paper); border: 1px solid var(--line-strong); font-size: 10.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; }
+  .plan-note { font-size: 12px; color: var(--ink-soft); margin-top: 12px; line-height: 1.5; }
   .spine.out { opacity: 0.35; border-style: dashed; color: var(--ink); background: transparent !important; }
 
   /* ---- intro, orientation control ---- */
@@ -293,6 +319,9 @@
           <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft);">
             <input type="checkbox" id="groupTogetherToggle" /> keep priority groups together
           </label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft);" title="Small boxes may sit behind others when there is room">
+            <input type="checkbox" class="allow-behind" /> allow games behind games
+          </label>
           <button class="btn" id="autoArrangeBtn">Auto-arrange all</button>
         </div>
       </div>
@@ -382,6 +411,14 @@
                 </select>
               </div>
               <div class="field full">
+                <label>Where it goes in the cube</label>
+                <select id="f_depthPref">
+                  <option value="auto">Anywhere: front row, or behind other games when it fits</option>
+                  <option value="front">Front row only</option>
+                  <option value="back">Back row only (behind other games)</option>
+                </select>
+              </div>
+              <div class="field full">
                 <label>BGG link (optional)</label>
                 <div style="display:flex; gap:8px; align-items:center;">
                   <input id="f_bggUrl" placeholder="https://boardgamegeek.com/boardgame/..." style="flex:1;" />
@@ -454,6 +491,10 @@
           <button type="button" data-orient="horizontal" aria-pressed="false">Lying flat</button>
         </div>
         <p class="orient-help orient-help-text" style="margin-top:8px;"></p>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; margin-top:12px;">
+          <input type="checkbox" class="allow-behind" /> Allow games behind games
+        </label>
+        <div class="view-sub" style="margin-top:4px;">Small boxes may sit behind others in the same cube when their depths fit. A game can be kept to the front or back row from its Collection card.</div>
       </div>
 
       <div class="settings-section">
@@ -479,6 +520,7 @@
 </div>
 
 <div id="drawerHost"></div>
+<div id="cubeHost"></div>
 
 <script>
 (function () {
@@ -573,6 +615,7 @@
     if (!s.priorityOrder) s.priorityOrder = ["playerCount", "complexity", "category"];
     if (typeof s.groupTogether !== "boolean") s.groupTogether = true;
     if (["best", "vertical", "horizontal"].indexOf(s.shelfOrientation) === -1) s.shelfOrientation = "best";
+    if (typeof s.allowBehind !== "boolean") s.allowBehind = true;
     return s;
   }
 
@@ -596,23 +639,23 @@
   // out, Length goes front-to-back, Height is just vertical clearance). "auto"
   // tries all three axes and picks whichever consumes the least shelf width.
   //
-  // Returns {spine, up}: the shelf width the box uses and how tall it stands, or null
-  // if it can't sit that way in the cube. (Stacking flat boxes is handled by the cube
-  // functions below; nothing is ever placed behind another box.)
+  // Returns {spine, up, depth}: the shelf width the box uses, how tall it stands, and how far
+  // front to back it reaches, or null if it can't sit that way in the cube. (Stacking flat
+  // boxes and putting boxes behind others are handled by the cube functions below.)
   function placementFor(dims, slot, orientation) {
     var a = Number(dims.a) || 0, b = Number(dims.b) || 0, c = Number(dims.c) || 0;
-    if (!a && !b && !c) return { spine: 0.01, up: null };
-    if (orientation === "vertical") return (a <= slot.h && b <= slot.d) ? { spine: c, up: a } : null;
-    if (orientation === "horizontal") return (c <= slot.h && a <= slot.d) ? { spine: b, up: c } : null;
+    if (!a && !b && !c) return { spine: 0.01, up: null, depth: 0 };
+    if (orientation === "vertical") return (a <= slot.h && b <= slot.d) ? { spine: c, up: a, depth: b } : null;
+    if (orientation === "horizontal") return (c <= slot.h && a <= slot.d) ? { spine: b, up: c, depth: a } : null;
     var vals = [a, b, c];
     var best = null;
     for (var i = 0; i < 3; i++) {
       var spine = vals[i];
       var others = vals.filter(function (_, idx) { return idx !== i; });
-      var up = null;
-      if (others[0] <= slot.h && others[1] <= slot.d) up = others[0];
-      else if (others[1] <= slot.h && others[0] <= slot.d) up = others[1];
-      if (up !== null && (best === null || spine < best.spine || (spine === best.spine && up > best.up))) best = { spine: spine, up: up };
+      var up = null, depth = 0;
+      if (others[0] <= slot.h && others[1] <= slot.d) { up = others[0]; depth = others[1]; }
+      else if (others[1] <= slot.h && others[0] <= slot.d) { up = others[1]; depth = others[0]; }
+      if (up !== null && (best === null || spine < best.spine || (spine === best.spine && up > best.up))) best = { spine: spine, up: up, depth: depth };
     }
     return best;
   }
@@ -651,17 +694,55 @@
     };
   }
 
-  // One cube's contents. A standing box takes a column as wide as its spine. Boxes lying
-  // flat stack on top of each other in a column, as high as the cube allows, and a box
-  // can sit on one that is a little narrower (see FLAT_OVERHANG). Each cube is a single row: nothing goes
-  // behind another box.
+  // One cube's contents, in two rows. The FRONT row (cols) is the one you see: a standing box
+  // takes a column as wide as its spine, and boxes lying flat stack on top of each other in a
+  // column, as high as the cube allows (a box can sit on one a little narrower, see
+  // FLAT_OVERHANG). The BACK row holds standing boxes tucked behind the front row. A back box
+  // is only allowed where it is shallow enough for the front boxes in front of it (their
+  // depths add up to no more than the cube's depth) and stands PEEK inches taller than they do,
+  // so its spine still shows. Both rows are rebuilt the same way every time from the order the
+  // games were placed in, so nothing extra is saved.
   var FLAT_OVERHANG = 1.5; // inches a flat box may overhang the one it sits on
-  function newCube(slot) { return { slot: slot, cols: [], used: 0, count: 0 }; }
+  var PEEK = 0.75;         // inches a back box must stand above the boxes in front of it
+  function newCube(slot) { return { slot: slot, cols: [], back: [], used: 0, count: 0 }; }
 
-  // Adds the game if it fits; returns its placement, or null (the cube is left unchanged).
-  function tryPlaceInCube(cube, g) {
-    var p = resolvePlacement(g, cube.slot);
-    if (!p) return null;
+  function colDepth(col) { return col.items.reduce(function (m, it) { return Math.max(m, it.p.depth || 0); }, 0); }
+  function colUp(col) { return col.flat ? col.height : (col.items[0].p.up || 0); }
+
+  // Where each front column sits across the cube (inches from the left), with its depth and height.
+  function frontSpans(cube) {
+    var x = 0;
+    return cube.cols.map(function (col) {
+      var span = { col: col, x0: x, x1: x + col.width, depth: colDepth(col), up: colUp(col) };
+      x += col.width;
+      return span;
+    });
+  }
+
+  function overlaps(aStart, aEnd, bStart, bEnd) { return Math.min(aEnd, bEnd) - Math.max(aStart, bStart) > 0.01; }
+
+  // True if every back box clears the front boxes it sits behind.
+  function cubeValid(cube) {
+    if (!cube.back.length) return true;
+    var spans = frontSpans(cube);
+    return cube.back.every(function (b) {
+      return spans.every(function (f) {
+        if (!overlaps(f.x0, f.x1, b.x, b.x + b.width)) return true;
+        return f.depth + b.depth <= cube.slot.d + 0.001 && b.up >= f.up + PEEK - 0.001;
+      });
+    });
+  }
+
+  function snapshotCube(c) {
+    return {
+      used: c.used, count: c.count,
+      cols: c.cols.map(function (col) { return { flat: col.flat, width: col.width, height: col.height, items: col.items.slice() }; }),
+      back: c.back.map(function (b) { return { x: b.x, width: b.width, up: b.up, depth: b.depth, items: b.items.slice() }; })
+    };
+  }
+  function restoreCube(c, snap) { c.used = snap.used; c.count = snap.count; c.cols = snap.cols; c.back = snap.back; }
+
+  function placeFront(cube, g, p) {
     var flat = p.up !== null && p.up < p.spine;
     if (flat) {
       for (var i = 0; i < cube.cols.length; i++) {
@@ -676,15 +757,51 @@
           col.width += grow;
           cube.used += grow;
           cube.count++;
-          return p;
+          return true;
         }
       }
     }
-    if (cube.used + p.spine > cube.slot.w + 0.001) return null;
+    if (cube.used + p.spine > cube.slot.w + 0.001) return false;
     cube.cols.push({ flat: flat, width: p.spine, height: flat ? p.up : 0, items: [{ g: g, p: p }] });
     cube.used += p.spine;
     cube.count++;
-    return p;
+    return true;
+  }
+
+  // Tuck a standing box behind the front row: just past the last back box, or lined up with
+  // the start of a later front column, whichever spot first clears the boxes in front.
+  function placeBack(cube, g, p) {
+    if (p.up === null || p.up < p.spine || !p.depth) return false; // only boxes standing with a known depth
+    var backEnd = cube.back.reduce(function (m, b) { return Math.max(m, b.x + b.width); }, 0);
+    var starts = [backEnd];
+    frontSpans(cube).forEach(function (f) { if (f.x0 > backEnd + 0.001) starts.push(f.x0); });
+    for (var i = 0; i < starts.length; i++) {
+      if (starts[i] + p.spine > cube.slot.w + 0.001) continue;
+      cube.back.push({ x: starts[i], width: p.spine, up: p.up, depth: p.depth, items: [{ g: g, p: p }] });
+      if (cubeValid(cube)) { cube.count++; return true; }
+      cube.back.pop();
+    }
+    return false;
+  }
+
+  // Adds the game if it fits; returns its placement, or null (the cube is left unchanged).
+  // A game's "where in the cube" choice (anywhere / front only / back only) is honoured, and
+  // nothing goes in the back row at all when the shelf setting is off.
+  function tryPlaceInCube(cube, g) {
+    var p = resolvePlacement(g, cube.slot);
+    if (!p) return null;
+    var pref = g.depthPref === "front" || g.depthPref === "back" ? g.depthPref : "auto";
+    var behindOk = state.allowBehind !== false && pref !== "front";
+    var frontOk = pref !== "back";
+    var snap = snapshotCube(cube);
+    if (frontOk && placeFront(cube, g, p)) {
+      if (cubeValid(cube)) return p;
+      restoreCube(cube, snap); // would have crowded a box already behind it
+      snap = snapshotCube(cube);
+    }
+    if (behindOk && placeBack(cube, g, p)) return p;
+    restoreCube(cube, snap);
+    return null;
   }
 
   // Rebuild a cube from the games saved in it, in shelf order. A game that no longer fits
@@ -693,12 +810,34 @@
     var cube = newCube(slot);
     occupants.forEach(function (g) {
       if (tryPlaceInCube(cube, g)) return;
-      var p = resolvePlacement(g, slot) || { spine: 1, up: null };
+      var p = resolvePlacement(g, slot) || { spine: 1, up: null, depth: 0 };
       cube.cols.push({ flat: false, width: p.spine, height: 0, items: [{ g: g, p: p }] });
       cube.used += p.spine;
       cube.count++;
     });
     return cube;
+  }
+
+  // For a placed game: which row it is in and which games share its footprint in the other row.
+  function rowContext(g) {
+    if (!g.homeSlot || g.storedInParent) return null;
+    var slot = allSlots().filter(function (s) { return s.id === g.homeSlot; })[0];
+    if (!slot) return null;
+    var cube = cubeFromOccupants(slot, occupantsOf(slot.id, null));
+    var spans = frontSpans(cube);
+    var mine = cube.back.filter(function (b) { return b.items[0].g.id === g.id; })[0];
+    if (mine) {
+      var infront = [];
+      spans.forEach(function (f) {
+        if (overlaps(f.x0, f.x1, mine.x, mine.x + mine.width)) f.col.items.forEach(function (it) { infront.push(it.g.name); });
+      });
+      return { row: "back", others: infront };
+    }
+    var span = spans.filter(function (f) { return f.col.items.some(function (it) { return it.g.id === g.id; }); })[0];
+    if (!span) return null;
+    var behind = cube.back.filter(function (b) { return overlaps(span.x0, span.x1, b.x, b.x + b.width); })
+      .map(function (b) { return b.items[0].g.name; });
+    return { row: "front", others: behind };
   }
 
   function occupantsOf(slotId, exceptId) {
@@ -730,6 +869,20 @@
       lastKey = key;
     });
     return unplacedCount;
+  }
+
+  // Rebuild one cube from its games in shelf order. Taking a box out shifts the ones after it,
+  // and a box behind them may then have nowhere valid to sit, so any game that no longer fits
+  // is re-homed (it ends up in another cube, or unassigned if nothing has room).
+  function settleSlot(slotId) {
+    var slot = slotId && allSlots().filter(function (s) { return s.id === slotId; })[0];
+    if (!slot) return;
+    var cube = newCube(slot), displaced = [];
+    occupantsOf(slotId, null).forEach(function (g) {
+      if (tryPlaceInCube(cube, g)) g.slotIndex = cube.count - 1;
+      else displaced.push(g);
+    });
+    displaced.forEach(function (g) { g.homeSlot = null; quickPlace(g); });
   }
 
   function quickPlace(g) {
@@ -1089,33 +1242,44 @@
       b.setAttribute("aria-pressed", b.dataset.orient === mode ? "true" : "false");
     });
     var help = ORIENT_HELP[mode] + " This is only the default: a game with its own choice (on its Collection card or in its Edit form) keeps that. " +
-      "Each cube is a single row, so nothing goes behind another box.";
+      (state.allowBehind !== false
+        ? "Small boxes can also sit behind others when there's room: click a cube to see its top-down plan."
+        : "Games stay in a single row: nothing goes behind another box.");
     document.querySelectorAll(".orient-help-text").forEach(function (p) { p.textContent = help; });
+    document.querySelectorAll(".allow-behind").forEach(function (c) { c.checked = state.allowBehind !== false; });
   }
 
   // A game's own orientation always beats the shelf-wide default. Change one game and keep it
   // in its cube if it still fits that way; otherwise find it a new home.
-  function setGameOrientation(id, value) {
+  function setGameOrientation(id, value) { setGameField(id, "orientation", value); }
+  function setGameDepth(id, value) { setGameField(id, "depthPref", value); }
+  function setGameField(id, field, value) {
     var g = state.games.filter(function (x) { return x.id === id; })[0];
     if (!g) return;
-    g.orientation = value;
-    var note = "";
-    if (!g.storedInParent) {
-      var kept = false;
-      var slot = g.homeSlot && allSlots().filter(function (s) { return s.id === g.homeSlot; })[0];
-      if (slot) {
-        var cube = cubeFromOccupants(slot, occupantsOf(slot.id, g.id));
-        if (tryPlaceInCube(cube, g)) { g.slotIndex = cube.count - 1; kept = true; }
-      }
-      if (!kept) {
-        var hadHome = !!g.homeSlot;
-        if (quickPlace(g)) { if (hadHome) note = g.name + " no longer fit its old cube that way, so it moved to " + slotLabel(g.homeSlot) + "."; }
-        else note = g.name + " can't sit that way in any cube, so it is unassigned. Choose another way for it to sit, or add shelf space in Settings.";
-      }
-    }
+    g[field] = value;
+    var note = refitGame(g);
     renderAll();
     schedulePersist();
     if (note) alert(note);
+  }
+
+  // After a game's own placement choice changes: keep it in its cube if it still fits there,
+  // otherwise find it a new home. Returns a message when something moved or nothing fits.
+  function refitGame(g) {
+    if (g.storedInParent) return "";
+    var kept = false, note = "", oldSlotId = g.homeSlot;
+    var slot = g.homeSlot && allSlots().filter(function (s) { return s.id === g.homeSlot; })[0];
+    if (slot) {
+      var cube = cubeFromOccupants(slot, occupantsOf(slot.id, g.id));
+      if (tryPlaceInCube(cube, g)) { g.slotIndex = cube.count - 1; kept = true; }
+    }
+    if (!kept) {
+      var hadHome = !!g.homeSlot;
+      if (quickPlace(g)) { if (hadHome) note = g.name + " no longer fit its old cube that way, so it moved to " + slotLabel(g.homeSlot) + "."; }
+      else note = g.name + " can't sit that way in any cube, so it is unassigned. Choose another way for it to sit, or add shelf space in Settings.";
+    }
+    if (oldSlotId) settleSlot(oldSlotId);
+    return note;
   }
 
   function orientSelectHtml(g) {
@@ -1123,6 +1287,25 @@
     var opts = [["auto", "Default (" + ORIENT_NAMES[state.shelfOrientation] + ")"], ["best", "Best fit"], ["vertical", "Standing up"], ["horizontal", "Lying flat"]];
     return '<select data-action="card-orient" data-id="' + g.id + '" aria-label="How ' + escapeHtml(g.name) + ' sits on the shelf">' +
       opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === cur ? " selected" : "") + ">" + escapeHtml(o[1]) + "</option>"; }).join("") + "</select>";
+  }
+
+  var DEPTH_NAMES = { auto: "Anywhere", front: "Front row only", back: "Back row only" };
+  function depthSelectHtml(g) {
+    var cur = g.depthPref === "front" || g.depthPref === "back" ? g.depthPref : "auto";
+    return '<select data-action="card-depth" data-id="' + g.id + '" aria-label="Where ' + escapeHtml(g.name) + ' goes in its cube">' +
+      ["auto", "front", "back"].map(function (k) { return '<option value="' + k + '"' + (k === cur ? " selected" : "") + ">" + DEPTH_NAMES[k] + "</option>"; }).join("") + "</select>";
+  }
+
+  // Letting small games sit behind others is a shelf-wide switch (Shelves tab and Settings).
+  function setAllowBehind(on) {
+    if ((state.allowBehind !== false) === on) return;
+    if (!demoMode && state.games.some(function (g) { return g.homeSlot; }) &&
+        !confirm("Change whether games can sit behind others and re-arrange the whole shelf to match?")) { renderOrientControl(); return; }
+    state.allowBehind = on;
+    var unplaced = autoArrangeAll();
+    renderAll();
+    schedulePersist();
+    if (unplaced) alert(unplaced + " game(s) didn't fit anywhere and are unassigned. Add more shelf space in Settings.");
   }
 
   function setShelfOrientation(mode) {
@@ -1186,7 +1369,13 @@
       var parent = state.games.filter(function (o) { return o.id === g.parentGameId; })[0];
       return "📦 stored inside " + (parent ? parent.name : "another game's box");
     }
-    return slotLabel(g.homeSlot);
+    var label = slotLabel(g.homeSlot);
+    var ctx = rowContext(g);
+    if (ctx && ctx.others.length) {
+      var names = ctx.others.slice(0, 2).map(escapeHtml).join(", ") + (ctx.others.length > 2 ? " +" + (ctx.others.length - 2) : "");
+      label += (ctx.row === "back" ? " · behind " : " · in front of ") + names;
+    }
+    return label;
   }
 
   // Box sizes to one decimal for display; the stored values keep full precision.
@@ -1278,6 +1467,7 @@
             '<a href="#" data-action="edit-game" data-id="' + g.id + '" style="color:var(--danger);">No dimensions &mdash; click to add</a> · ' +
             '<a href="https://www.google.com/search?q=' + encodeURIComponent(g.name + " board game box dimensions") + '" target="_blank" rel="noopener">search web</a>') + "</div>" +
           (g.storedInParent ? "" : '<div class="card-orient" data-action="noop"><span>How it sits</span>' + orientSelectHtml(g) + "</div>") +
+          (g.storedInParent || state.allowBehind === false ? "" : '<div class="card-orient" data-action="noop"><span>In the cube</span>' + depthSelectHtml(g) + "</div>") +
           '<div class="card-slot">' + locationLabel(g) + "</div>" +
           '<div class="card-actions">' +
             '<button class="btn small" data-action="toggle-checkout" data-id="' + g.id + '">' + (g.status === "checked_out" ? "Check in" : "Check out") + "</button>" +
@@ -1333,8 +1523,27 @@
             });
             innerHtml += '<div class="stack" style="flex:0 0 ' + Math.max(6, (col.width / u.cubeW) * 100) + '%">' + stack + "</div>";
           });
-          if (!cube.cols.length) innerHtml = '<div class="slot-empty-note">empty</div>';
-          box.innerHTML = '<div class="slot-row">' + innerHtml + '</div><div class="slot-cap">' + Math.max(0, u.cubeW - cube.used).toFixed(0) + '″ free</div>';
+          // Boxes tucked behind the front row: lighter and numbered, drawn under the front boxes.
+          var backHtml = "";
+          cube.back.forEach(function (b, bi) {
+            var bg = b.items[0].g;
+            var hp = Math.min(100, Math.max(10, (b.up / u.cubeH) * 100));
+            var inFront = frontSpans(cube).filter(function (f) { return overlaps(f.x0, f.x1, b.x, b.x + b.width); })
+              .map(function (f) { return f.col.items[0].g.name; });
+            backHtml += '<div class="spine back' + (bg.status === "checked_out" ? " out" : "") + '" style="left:' + ((b.x / u.cubeW) * 100) + '%; width:' + ((b.width / u.cubeW) * 100) +
+              '%; height:' + hp + '%; background:' + (bg.status === "checked_out" ? "transparent" : categoryColor(bg.category)) + ';" data-action="open-detail" data-id="' + bg.id +
+              '" title="' + escapeHtml(bg.name + " (behind " + (inFront.join(", ") || "the front row") + ")") + '"><span class="back-badge">' + (bi + 1) + "</span></div>";
+          });
+          if (!cube.cols.length && !cube.back.length) innerHtml = '<div class="slot-empty-note">empty</div>';
+          box.innerHTML = '<div class="slot-row">' + (backHtml ? '<div class="back-layer">' + backHtml + "</div>" : "") + innerHtml + '</div>' +
+            (cube.back.length ? '<div class="slot-behind">+' + cube.back.length + " behind</div>" : "") +
+            '<div class="slot-cap">' + Math.max(0, u.cubeW - cube.used).toFixed(0) + '″ free</div>';
+          if (cube.count) {
+            box.classList.add("clickable");
+            box.dataset.action = "open-cube";
+            box.dataset.slot = slotId;
+            box.title = "Click for a top-down plan of this cube";
+          }
           grid.appendChild(box);
         }
       }
@@ -1529,6 +1738,59 @@
     if (tab === "shelves") fitSpineText();
   }
 
+  // ---------- cube plan (top-down) ----------
+  function openCube(slotId) {
+    var slot = allSlots().filter(function (s) { return s.id === slotId; })[0];
+    if (!slot) return;
+    var cube = cubeFromOccupants(slot, occupantsOf(slotId, null));
+    var P = Math.min(16, 300 / Math.max(slot.w, 1));
+    var spans = frontSpans(cube);
+    var boxes = "", frontList = "", backList = "";
+    spans.forEach(function (f) {
+      var g0 = f.col.items[0].g, n = f.col.items.length;
+      boxes += '<div class="plan-box" style="left:' + (f.x0 * P) + "px; width:" + ((f.x1 - f.x0) * P) + "px; bottom:0; height:" + Math.max(8, f.depth * P) + "px; background:" + categoryColor(g0.category) +
+        ';" data-action="open-detail" data-id="' + g0.id + '" title="' + escapeHtml(f.col.items.map(function (it) { return it.g.name; }).join(", ")) + '"><span>' +
+        escapeHtml(g0.name) + (n > 1 ? " +" + (n - 1) : "") + "</span></div>";
+      f.col.items.forEach(function (it) {
+        frontList += '<li><a data-action="open-detail" data-id="' + it.g.id + '">' + escapeHtml(it.g.name) + "</a>" +
+          (f.col.flat ? ' <span style="color:var(--ink-faint)">(lying flat)</span>' : "") + "</li>";
+      });
+    });
+    cube.back.forEach(function (b, i) {
+      var g = b.items[0].g;
+      boxes += '<div class="plan-box back" style="left:' + (b.x * P) + "px; width:" + (b.width * P) + "px; top:0; height:" + Math.max(8, b.depth * P) + "px; background:" + categoryColor(g.category) +
+        ';" data-action="open-detail" data-id="' + g.id + '" title="' + escapeHtml(g.name) + '"><span>' + (i + 1) + " " + escapeHtml(g.name) + "</span></div>";
+      backList += '<li><span class="num">' + (i + 1) + '</span><a data-action="open-detail" data-id="' + g.id + '">' + escapeHtml(g.name) + "</a></li>";
+    });
+    var host = document.getElementById("cubeHost");
+    var backdrop = document.createElement("div");
+    backdrop.className = "drawer-backdrop center";
+    backdrop.innerHTML =
+      '<div class="cube-modal" role="dialog" aria-label="Top-down plan of this cube">' +
+        '<button class="close-x" data-action="close-cube" aria-label="Close">&times;</button>' +
+        "<h2>" + escapeHtml(slotLabel(slotId)) + "</h2>" +
+        '<div style="color:var(--ink-soft); font-size:12.5px;">Looking down into the cube, drawn to scale: ' + slot.w + "″ wide × " + slot.d + "″ deep. " +
+          Math.max(0, slot.w - cube.used).toFixed(0) + "″ of the front row is free.</div>" +
+        '<div class="plan-wrap">' +
+          '<div class="plan-frame" style="width:' + (slot.w * P) + 'px;">' +
+            '<div class="edge" style="top:0;">BACK WALL</div>' +
+            '<div class="plan-area" style="width:' + (slot.w * P) + "px; height:" + (slot.d * P) + 'px;">' + boxes + "</div>" +
+            '<div class="edge" style="bottom:0;">FRONT OPENING</div>' +
+          "</div>" +
+          '<div class="plan-list">' +
+            "<h3>Front row</h3><ul>" + (frontList || '<li style="color:var(--ink-faint)">Nothing</li>') + "</ul>" +
+            "<h3>Behind them</h3><ul>" + (backList || '<li style="color:var(--ink-faint)">Nothing is behind another box here.</li>') + "</ul>" +
+          "</div>" +
+        "</div>" +
+        '<p class="plan-note">A box goes behind another only when their depths add up to ' + slot.d + "″ or less and the back one stands at least " + PEEK +
+          "″ taller, so its spine still shows. A game can be kept to the front or back row from its Collection card.</p>" +
+      "</div>";
+    host.innerHTML = "";
+    host.appendChild(backdrop);
+    backdrop.addEventListener("click", function (e) { if (e.target === backdrop) closeCube(); });
+  }
+  function closeCube() { var h = document.getElementById("cubeHost"); if (h) h.innerHTML = ""; }
+
   // ---------- detail drawer ----------
   function openDetail(gameId) {
     var g = state.games.filter(function (x) { return x.id === gameId; })[0];
@@ -1617,6 +1879,7 @@
     document.getElementById("f_dimB").value = (g && g.dims && g.dims.b) || "";
     document.getElementById("f_dimC").value = (g && g.dims && g.dims.c) || "";
     document.getElementById("f_orientation").value = (g && g.orientation) || "auto";
+    document.getElementById("f_depthPref").value = (g && g.depthPref) || "auto";
     document.getElementById("f_bggUrl").value = (g && g.bggUrl) || "";
     document.getElementById("f_isExpansion").checked = !!(g && g.isExpansion);
     document.getElementById("f_expandsOf").value = (g && g.expandsOf) || "";
@@ -1656,7 +1919,9 @@
       c: parseFloat(document.getElementById("f_dimC").value) || 0
     };
     g.bggUrl = document.getElementById("f_bggUrl").value.trim();
+    var prevOrient = g.orientation, prevDepth = g.depthPref || "auto";
     g.orientation = document.getElementById("f_orientation").value;
+    g.depthPref = document.getElementById("f_depthPref").value;
     g.isExpansion = document.getElementById("f_isExpansion").checked;
     g.expandsOf = document.getElementById("f_expandsOf").value.trim();
     g.parentGameId = g.isExpansion ? document.getElementById("f_parentGameId").value : "";
@@ -1664,9 +1929,14 @@
 
     if (g.storedInParent) { g.homeSlot = null; }
     else if (isNew || !g.homeSlot) { quickPlace(g); }
+    else if (prevOrient !== g.orientation || prevDepth !== g.depthPref) {
+      var refitNote = refitGame(g);
+      if (refitNote) setTimeout(function () { alert(refitNote); }, 0);
+    }
 
     if (pendingId) state.pending = state.pending.filter(function (p) { return p.id !== pendingId; });
 
+    if (!isNew && g.homeSlot) settleSlot(g.homeSlot);
     clearForm();
     renderAll();
     schedulePersist();
@@ -1837,6 +2107,9 @@
     document.addEventListener("change", function (e) {
       var co = e.target.closest('[data-action="card-orient"]');
       if (co) { setGameOrientation(co.dataset.id, co.value); return; }
+      var cd = e.target.closest('[data-action="card-depth"]');
+      if (cd) { setGameDepth(cd.dataset.id, cd.value); return; }
+      if (e.target.classList && e.target.classList.contains("allow-behind")) { setAllowBehind(e.target.checked); return; }
       var el = e.target.closest('[data-action="filter-language"]');
       if (!el) return;
       if (el.dataset.scope === "search") {
@@ -1866,7 +2139,9 @@
         location.reload();
         return;
       }
-      if (action === "open-detail") { openDetail(id); return; }
+      if (action === "open-detail") { closeCube(); openDetail(id); return; }
+      if (action === "open-cube") { openCube(el.dataset.slot); return; }
+      if (action === "close-cube") { closeCube(); return; }
       if (action === "close-drawer") { closeDrawer(); return; }
 
       if (action === "toggle-checkout") {
@@ -1889,7 +2164,9 @@
       if (action === "move-game") {
         var g3 = state.games.filter(function (x) { return x.id === id; })[0];
         if (!g3) return;
+        var oldSlot3 = g3.homeSlot;
         var placed = quickPlace(g3);
+        if (oldSlot3) settleSlot(oldSlot3);
         renderAll();
         closeDrawer();
         schedulePersist();
@@ -1898,7 +2175,9 @@
       }
       if (action === "remove-game") {
         if (!confirm("Remove this game from your collection?")) return;
+        var removedGame = state.games.filter(function (x) { return x.id === id; })[0];
         state.games = state.games.filter(function (x) { return x.id !== id; });
+        if (removedGame && removedGame.homeSlot) settleSlot(removedGame.homeSlot);
         closeDrawer();
         renderAll();
         schedulePersist();

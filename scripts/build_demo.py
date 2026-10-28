@@ -29,6 +29,9 @@ FILL = 0.72                             # stop adding games when this much shelf
 DEMO_GAMES = [
     # small two-player boxes
     "7 Wonders Duel", "Patchwork", "Jaipur", "Targi", "Splendor Duel",
+    # low, shallow two-player boxes up front, taller shallow ones that can sit behind them
+    "Hanamikoji", "Schotten Totten", "Lost Cities", "Air, Land, & Sea",
+    "Battle Line", "Codenames: Duet", "Sky Team", "Unmatched: Robin Hood vs. Bigfoot",
     # party and light games
     "Codenames", "Just One", "The Crew: Mission Deep Sea",
     # family weight
