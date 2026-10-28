@@ -129,10 +129,10 @@
   .unit-head h3 { font-size: 15.5px; }
   .unit-head .tag { font-size: 11.5px; color: var(--ink-faint); }
   .unit-grid { display: grid; gap: 8px; }
-  .slot-box { border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); min-height: 64px; position: relative; overflow: hidden; }
+  .slot-box { container-type: inline-size; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); min-height: 64px; position: relative; overflow: hidden; }
   .slot-row { position: absolute; inset: 5px 5px 15px 5px; display: flex; align-items: flex-end; gap: 2px; }
   .slot-empty-note { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10.5px; color: var(--ink-faint); pointer-events: none; }
-  .spine { border-radius: 3px; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; font-size: 10.5px; font-weight: 700; color: #fff; padding: 4px 2px; cursor: pointer; text-overflow: ellipsis; overflow: hidden; min-width: 14px; border: 1px solid rgba(0,0,0,0.15); }
+  .spine { border-radius: 3px; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; font-size: 12px; line-height: 1.15; font-weight: 700; color: #fff; padding: 3px 1px; cursor: pointer; overflow: hidden; min-width: 14px; border: 1px solid rgba(0,0,0,0.15); }
   .prio-row { display: flex; flex-wrap: wrap; gap: 5px; }
   .prio { display: inline-flex; align-items: baseline; gap: 5px; padding: 2px 8px; border-radius: 100px; background: var(--paper); border: 1px solid var(--line); font-size: 11.5px; font-weight: 600; color: var(--ink); }
   .prio em { font-style: normal; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); }
@@ -143,7 +143,9 @@
   .card-orient select { flex: 1; min-width: 0; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--surface-raised); color: var(--ink); font-size: 12px; }
   .stack { align-self: stretch; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 14px; }
   .stack .spine { flex: 0 0 auto; width: 100%; min-height: 8px; }
-  .spine.flat { writing-mode: horizontal-tb; padding: 0 4px; white-space: nowrap; }
+  .spine.flat { writing-mode: horizontal-tb; padding: 0 5px; }
+  /* The whole title, cut with an ellipsis only where the box actually runs out of room. */
+  .spine-text { display: block; min-width: 0; min-height: 0; max-width: 100%; max-height: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .spine.out { opacity: 0.35; border-style: dashed; color: var(--ink); background: transparent !important; }
 
   /* ---- intro, orientation control ---- */
@@ -1324,9 +1326,13 @@
               var flat = pl.up !== null && pl.up < pl.spine;
               var color = categoryColor(g.category);
               var insideCount = state.games.filter(function (o) { return o.storedInParent && o.parentGameId === g.id; }).length;
-              var label = escapeHtml(shortName(g.name)) + (insideCount ? ' <span class="inside-badge">(+' + insideCount + ")</span>" : "");
+              var label = '<span class="spine-text" data-full="' + escapeHtml(g.name) + '"><span class="st-name">' + escapeHtml(g.name) + "</span>" +
+                (insideCount ? ' <span class="inside-badge">(+' + insideCount + ")</span>" : "") + "</span>";
+              // Lettering grows with the box's thickness (a fat box gets bigger type), within sane limits.
+              var thick = flat ? pl.up : pl.spine;
+              var fontCss = "clamp(11px, " + ((thick / u.cubeW) * 100 * 0.62).toFixed(2) + "cqw, 17px)";
               var titleText = g.name + (flat ? " (lying flat)" : " (standing)") + (insideCount ? " (+" + insideCount + " expansion" + (insideCount === 1 ? "" : "s") + " stored inside)" : "");
-              stack += '<div class="spine' + (flat ? " flat" : "") + (g.status === "checked_out" ? " out" : "") + '" style="height:' + heightPct + '%; background:' + (g.status === "checked_out" ? "transparent" : color) + ';" data-action="open-detail" data-id="' + g.id + '" title="' + escapeHtml(titleText) + '">' + label + "</div>";
+              stack += '<div class="spine' + (flat ? " flat" : "") + (g.status === "checked_out" ? " out" : "") + '" style="height:' + heightPct + '%; font-size:' + fontCss + '; background:' + (g.status === "checked_out" ? "transparent" : color) + ';" data-action="open-detail" data-id="' + g.id + '" title="' + escapeHtml(titleText) + '">' + label + "</div>";
             });
             innerHtml += '<div class="stack" style="flex:0 0 ' + Math.max(6, (col.width / u.cubeW) * 100) + '%">' + stack + "</div>";
           });
@@ -1338,9 +1344,56 @@
       block.appendChild(grid);
       host.appendChild(block);
     });
+    fitSpineText();
   }
 
-  function shortName(n) { return n && n.length > 16 ? n.slice(0, 14) + "…" : n; }
+  // Fit a title to its box without making it tiny. Try the full name at the readable size; if it
+  // doesn't fit, drop trailing subtitle parts ("Pandemic Legacy: Season 1" -> "Pandemic Legacy");
+  // only when even the main title is too long, shrink it a little, and finally let the
+  // ellipsis cut it. The full name is always in the tooltip.
+  var SPINE_MIN_COMFY = 11, SPINE_MIN_TINY = 9.5;
+  function fitSpineText() {
+    document.querySelectorAll("#shelfHost .spine-text").forEach(function (el) {
+      var spine = el.parentElement;
+      var nameEl = el.querySelector(".st-name");
+      el.style.fontSize = "";
+      nameEl.textContent = el.getAttribute("data-full");
+      if (!spine.clientHeight) return; // tab hidden: measured again when it is shown
+      var flat = spine.classList.contains("flat");
+      // Compare the text's real extent with the box (scrollHeight rounds, so a fraction of a pixel
+      // of overflow would still trigger the ellipsis).
+      var range = document.createRange();
+      var over = function () {
+        range.selectNodeContents(el);
+        var t = range.getBoundingClientRect(), b = el.getBoundingClientRect();
+        return flat ? t.width > b.width + 0.05 : t.height > b.height + 0.05;
+      };
+      var base = parseFloat(getComputedStyle(el).fontSize);
+      var floor = Math.min(SPINE_MIN_COMFY, base);
+
+      // Candidate names, longest first: the full title, then with trailing ": ..." / " - ..." parts removed.
+      var parts = el.getAttribute("data-full").split(/(:\s+|\s+[–—-]\s+)/);
+      var cands = [];
+      for (var n = parts.length; n >= 1; n -= 2) cands.push(parts.slice(0, n).join(""));
+      cands = cands.filter(function (c) { return c.length >= 3; });
+      if (!cands.length) cands = [el.getAttribute("data-full")];
+
+      for (var i = 0; i < cands.length; i++) {
+        nameEl.textContent = cands[i];
+        var size = base;
+        el.style.fontSize = "";
+        while (over() && size > floor) { size -= 0.5; el.style.fontSize = size + "px"; }
+        if (!over()) return;
+      }
+      // Even the main title is too long: allow smaller lettering as a last resort.
+      var last = cands[cands.length - 1];
+      nameEl.textContent = last;
+      var s2 = floor;
+      while (over() && s2 > SPINE_MIN_TINY) { s2 -= 0.5; el.style.fontSize = s2 + "px"; }
+    });
+  }
+  var fitTimer = null;
+  window.addEventListener("resize", function () { clearTimeout(fitTimer); fitTimer = setTimeout(fitSpineText, 120); });
 
   var CATEGORY_COLORS = {
     Strategy: "#2F7A63", Family: "#B8842A", Party: "#A8452F", Cooperative: "#3A6EA8",
@@ -1489,6 +1542,7 @@
     document.querySelectorAll(".nav-btn, .bottom-tabs button").forEach(function (b) {
       b.classList.toggle("active", b.dataset.tab === tab);
     });
+    if (tab === "shelves") fitSpineText();
   }
 
   // ---------- detail drawer ----------
