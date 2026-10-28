@@ -8,13 +8,16 @@ IKEA Kallax / Eket / Billy shelving, sorted by the priorities you choose
 (player count, then complexity, then category, or any order you like). Check a
 game out and it remembers which cube it came from.
 
-**[Live demo](https://krisrchesney.github.io/boxwatch/)**: an invented sample shelf you can rearrange, check games out of, and add to. Your edits stay in your own browser. Search works against a built-in snapshot of BoardGameGeek's top 500 games, so it can't find everything; for live search across all of BGG, run it locally (below).
+**[Live demo](https://krisrchesney.github.io/boxwatch/)**: a sample shelf of well-known games from BoardGameGeek's top 500 that you can rearrange, check games out of, and add to. Your edits stay in your own browser. The demo only includes the top 500 games: its search looks them up in a built-in snapshot. The full version runs on your own computer and searches all of BoardGameGeek live (below).
+
+**Light, Medium and Heavy** in the app describe how complex a game's rules are (BGG's 1-5 "weight" rating), not how much the box weighs.
 
 ## What it does
 
 - **Search BGG by name** and add a game with its rating, complexity, player counts, best player count, category, publisher and rank.
 - **Pick the right edition** (local version). Browse a game's editions (newest first, filterable by language) and take its real box dimensions. If you add without choosing, it auto-picks the most likely retail edition: English, with dimensions on file, and a name matching the game's current title.
-- **Shelf layout to scale.** Presets for Kallax, Eket and Billy plus custom cubes. Boxes are placed by spine width, and each box can be forced to stand up or lie flat.
+- **Shelf layout to scale.** Presets for Kallax, Eket and Billy plus custom cubes. Each box is drawn at its real proportions inside its cube.
+- **Choose how boxes sit.** One switch on the Shelves tab sets the whole shelf to best fit, standing up (spine out), or lying flat (stacked up to the cube's height). A box that can't sit the chosen way falls back to best fit, and you can override any single game from its Edit form.
 - **Auto-arrange** the whole collection by your priority order, or let new games find a spot beside their group without disturbing the rest.
 - **Check out / check in.** A checked-out game keeps its cube reserved on the shelf view.
 - **Expansions.** Mark an expansion as stored inside its base game's box and it takes no shelf space of its own.
@@ -55,6 +58,7 @@ Both `bgg_token.txt` and `boxwatch-data.json` are in `.gitignore`. Never commit 
 - `server.py` is a small local server. It serves the page, stores the collection as JSON, and proxies BGG (so the token never reaches the browser).
 - `index.html` is the whole app: plain HTML, CSS and JavaScript, no build step. If it can't find the server (as on the hosted demo) it loads `demo-data.json`, searches `catalog.json`, and saves to the browser's `localStorage` instead.
 - `catalog.json` is a static snapshot of BGG's top-ranked games (name, year, players, time, rating, weight, rank, top tags, publisher, designer, and a best-guess box size). `scripts/build_catalog.py` regenerates it. It needs your own BGG token, and takes about 25 minutes for 500 games because it makes one request per game, politely spaced.
+- `demo-data.json` is the demo's starting shelf: 25 real games picked from `catalog.json` by `scripts/build_demo.py`. Edit the list in that script and re-run it to change what the demo opens with.
 - The server only answers requests addressed to localhost and only accepts writes with a JSON content type, so a web page you happen to have open can't read or overwrite your collection through it.
 - `.github/workflows/pages.yml` publishes only `index.html`, `demo-data.json`, `catalog.json` and the BGG logo to GitHub Pages. The server, your data and your token are never uploaded.
 
@@ -73,4 +77,5 @@ The catalog is a snapshot and goes stale: ratings and ranks change daily. The de
 - BGG only has box dimensions for some editions. When none are on file you can enter them by hand or follow the "search web" link on the card.
 - Dimensions from a different language edition are used as an estimate when no English edition has any; the app does not show that edition's foreign title or cover.
 - A game's category is the first tag BGG lists for it (they are alphabetical), which is sometimes a period or theme rather than a genre. Edit it by hand if grouping by category matters to you.
-- Shelf placement is a greedy fit, not an optimal bin-packing, and it treats each cube as one row of upright boxes.
+- **Nothing goes behind another box.** Each cube is treated as a single row from front to back, so a small game can't be tucked behind another small game yet, even when the cube is deep enough. Boxes lying flat do stack on top of each other, but only a box no wider than the one beneath it goes on top.
+- Shelf placement is a greedy fit (games are taken in priority order and put in the first cube with room), not an optimal bin-packing.
