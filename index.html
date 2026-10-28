@@ -132,7 +132,7 @@
   .slot-box { container-type: inline-size; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); min-height: 64px; position: relative; overflow: hidden; }
   .slot-row { position: absolute; inset: 5px 5px 15px 5px; display: flex; align-items: flex-end; gap: 2px; }
   .slot-empty-note { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10.5px; color: var(--ink-faint); pointer-events: none; }
-  .spine { border-radius: 3px; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; font-size: 12px; line-height: 1.15; font-weight: 700; color: #fff; padding: 3px 1px; cursor: pointer; overflow: hidden; min-width: 14px; border: 1px solid rgba(0,0,0,0.15); }
+  .spine { border-radius: 3px; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; font-size: 13px; line-height: 1.15; font-weight: 700; color: #fff; padding: 3px 1px; cursor: pointer; overflow: hidden; min-width: 14px; border: 1px solid rgba(0,0,0,0.15); }
   .prio-row { display: flex; flex-wrap: wrap; gap: 5px; }
   .prio { display: inline-flex; align-items: baseline; gap: 5px; padding: 2px 8px; border-radius: 100px; background: var(--paper); border: 1px solid var(--line); font-size: 11.5px; font-weight: 600; color: var(--ink); }
   .prio em { font-style: normal; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); }
@@ -1328,11 +1328,8 @@
               var insideCount = state.games.filter(function (o) { return o.storedInParent && o.parentGameId === g.id; }).length;
               var label = '<span class="spine-text" data-full="' + escapeHtml(g.name) + '"><span class="st-name">' + escapeHtml(g.name) + "</span>" +
                 (insideCount ? ' <span class="inside-badge">(+' + insideCount + ")</span>" : "") + "</span>";
-              // Lettering grows with the box's thickness (a fat box gets bigger type), within sane limits.
-              var thick = flat ? pl.up : pl.spine;
-              var fontCss = "clamp(11px, " + ((thick / u.cubeW) * 100 * 0.62).toFixed(2) + "cqw, 17px)";
               var titleText = g.name + (flat ? " (lying flat)" : " (standing)") + (insideCount ? " (+" + insideCount + " expansion" + (insideCount === 1 ? "" : "s") + " stored inside)" : "");
-              stack += '<div class="spine' + (flat ? " flat" : "") + (g.status === "checked_out" ? " out" : "") + '" style="height:' + heightPct + '%; font-size:' + fontCss + '; background:' + (g.status === "checked_out" ? "transparent" : color) + ';" data-action="open-detail" data-id="' + g.id + '" title="' + escapeHtml(titleText) + '">' + label + "</div>";
+              stack += '<div class="spine' + (flat ? " flat" : "") + (g.status === "checked_out" ? " out" : "") + '" style="height:' + heightPct + '%; background:' + (g.status === "checked_out" ? "transparent" : color) + ';" data-action="open-detail" data-id="' + g.id + '" title="' + escapeHtml(titleText) + '">' + label + "</div>";
             });
             innerHtml += '<div class="stack" style="flex:0 0 ' + Math.max(6, (col.width / u.cubeW) * 100) + '%">' + stack + "</div>";
           });
@@ -1347,16 +1344,13 @@
     fitSpineText();
   }
 
-  // Fit a title to its box without making it tiny. Try the full name at the readable size; if it
-  // doesn't fit, drop trailing subtitle parts ("Pandemic Legacy: Season 1" -> "Pandemic Legacy");
-  // only when even the main title is too long, shrink it a little, and finally let the
-  // ellipsis cut it. The full name is always in the tooltip.
-  var SPINE_MIN_COMFY = 11, SPINE_MIN_TINY = 9.5;
+  // Titles are one standard size. Try the full name; if it doesn't fit, drop trailing subtitle
+  // parts ("Pandemic Legacy: Season 1" -> "Pandemic Legacy"); if even that is too long, the
+  // ellipsis cuts it. The full name is always in the tooltip.
   function fitSpineText() {
     document.querySelectorAll("#shelfHost .spine-text").forEach(function (el) {
       var spine = el.parentElement;
       var nameEl = el.querySelector(".st-name");
-      el.style.fontSize = "";
       nameEl.textContent = el.getAttribute("data-full");
       if (!spine.clientHeight) return; // tab hidden: measured again when it is shown
       var flat = spine.classList.contains("flat");
@@ -1368,9 +1362,6 @@
         var t = range.getBoundingClientRect(), b = el.getBoundingClientRect();
         return flat ? t.width > b.width + 0.05 : t.height > b.height + 0.05;
       };
-      var base = parseFloat(getComputedStyle(el).fontSize);
-      var floor = Math.min(SPINE_MIN_COMFY, base);
-
       // Candidate names, longest first: the full title, then with trailing ": ..." / " - ..." parts removed.
       var parts = el.getAttribute("data-full").split(/(:\s+|\s+[–—-]\s+)/);
       var cands = [];
@@ -1380,16 +1371,9 @@
 
       for (var i = 0; i < cands.length; i++) {
         nameEl.textContent = cands[i];
-        var size = base;
-        el.style.fontSize = "";
-        while (over() && size > floor) { size -= 0.5; el.style.fontSize = size + "px"; }
         if (!over()) return;
       }
-      // Even the main title is too long: allow smaller lettering as a last resort.
-      var last = cands[cands.length - 1];
-      nameEl.textContent = last;
-      var s2 = floor;
-      while (over() && s2 > SPINE_MIN_TINY) { s2 -= 0.5; el.style.fontSize = s2 + "px"; }
+      // Nothing fits whole: keep the main title and let the ellipsis cut it.
     });
   }
   var fitTimer = null;
