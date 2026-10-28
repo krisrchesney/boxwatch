@@ -2152,5 +2152,6 @@
     "category"
   ],
   "groupTogether": false,
-  "shelfOrientation": "best"
+  "shelfOrientation": "best",
+  "demoVersion": "1df4b0406c"
 }

@@ -817,11 +817,20 @@
     demoMode = true;
     var saved = null;
     try { saved = JSON.parse(localStorage.getItem(DEMO_KEY)); } catch (e) { saved = null; }
-    if (saved && saved.games) return Promise.resolve(saved);
-    freshDemo = true; // first visit: shelve the sample games once the data is loaded
+    if (saved && !saved.games) saved = null;
+    // Always look at the current sample shelf. Edits made in a visitor's browser are kept only
+    // while it is the same version as the one they started from; a newer sample shelf replaces
+    // an old saved copy (otherwise returning visitors would never see changes to the demo).
     return fetch("demo-data.json", { cache: "no-cache" }).then(function (r) {
       if (!r.ok) throw new Error("no demo data");
       return r.json();
+    }).then(function (seed) {
+      if (saved && saved.demoVersion === seed.demoVersion) return saved;
+      freshDemo = true; // shelve the sample games once the data is loaded
+      return seed;
+    }).catch(function (err) {
+      if (saved) return saved; // offline: keep whatever was saved
+      throw err;
     });
   }
 
@@ -1776,6 +1785,7 @@
         try {
           var imported = normalize(JSON.parse(reader.result));
           if (!confirm("Replace your current collection and shelves with this backup?")) return;
+          if (demoMode) imported.demoVersion = state.demoVersion; // keep an imported backup across reloads
           state = imported;
           renderAll();
           schedulePersist();
