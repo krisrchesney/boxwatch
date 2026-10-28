@@ -17,7 +17,8 @@ game out and it remembers which cube it came from.
 - **Search BGG by name** and add a game with its rating, complexity, player counts, best player count, category, publisher and rank.
 - **Pick the right edition** (local version). Browse a game's editions (newest first, filterable by language) and take its real box dimensions. If you add without choosing, it auto-picks the most likely retail edition: English, with dimensions on file, and a name matching the game's current title.
 - **Shelf layout to scale.** Presets for Kallax, Eket and Billy plus custom cubes. Each box is drawn at its real proportions inside its cube.
-- **Choose how boxes sit.** One switch on the Shelves tab sets the whole shelf to best fit, standing up (spine out), or lying flat (stacked up to the cube's height). A box that can't sit the chosen way falls back to best fit, and you can override any single game from its Edit form.
+- **Choose how boxes sit.** Settings (and a quick switch on the Shelves tab) sets the default for the whole shelf: best fit, standing up (spine out), or lying flat (stacked up to the cube's height). A box that can't sit the default way falls back to best fit. Any single game can override the default from a dropdown on its Collection card or from its Edit form, and the game's own choice always wins.
+- **Collection cards** show the cover, rating, player count, and the fields your shelves are sorted by (player count, complexity, category, in your priority order), each labeled.
 - **Auto-arrange** the whole collection by your priority order, or let new games find a spot beside their group without disturbing the rest.
 - **Check out / check in.** A checked-out game keeps its cube reserved on the shelf view.
 - **Expansions.** Mark an expansion as stored inside its base game's box and it takes no shelf space of its own.
@@ -58,7 +59,7 @@ Both `bgg_token.txt` and `boxwatch-data.json` are in `.gitignore`. Never commit 
 - `server.py` is a small local server. It serves the page, stores the collection as JSON, and proxies BGG (so the token never reaches the browser).
 - `index.html` is the whole app: plain HTML, CSS and JavaScript, no build step. If it can't find the server (as on the hosted demo) it loads `demo-data.json`, searches `catalog.json`, and saves to the browser's `localStorage` instead.
 - `catalog.json` is a static snapshot of BGG's top-ranked games (name, year, players, time, rating, weight, rank, top tags, publisher, designer, and a best-guess box size). `scripts/build_catalog.py` regenerates it. It needs your own BGG token, and takes about 25 minutes for 500 games because it makes one request per game, politely spaced.
-- `demo-data.json` is the demo's starting shelf: 25 real games picked from `catalog.json` by `scripts/build_demo.py`. Edit the list in that script and re-run it to change what the demo opens with.
+- `demo-data.json` is the demo's starting shelf: a Kallax 4×4 holding about 50 real games picked from `catalog.json` by `scripts/build_demo.py` (a hand-picked mix first, then the next-highest-ranked games that fit). Edit the script and re-run it to change what the demo opens with.
 - The server only answers requests addressed to localhost and only accepts writes with a JSON content type, so a web page you happen to have open can't read or overwrite your collection through it.
 - `.github/workflows/pages.yml` publishes only `index.html`, `demo-data.json`, `catalog.json` and the BGG logo to GitHub Pages. The server, your data and your token are never uploaded.
 
@@ -70,12 +71,12 @@ Game data comes from BoardGameGeek's XML API, used under BGG's
 The page credits BoardGameGeek by name. BGG also asks public-facing pages to show its
 "Powered by BGG" logo. Download it from BGG's wiki ("Powered by BGG Logos") and save it as `powered-by-bgg.png` next to `index.html`; the page and the Pages workflow pick it up automatically.
 
-The catalog is a snapshot and goes stale: ratings and ranks change daily. The demo shows no cover art; publishers own that artwork.
+The catalog is a snapshot and goes stale: ratings and ranks change daily. Cover art is hotlinked: each image loads from BGG's own server when it is shown, using the link BGG's API provides, and no artwork is stored in this repository. The art belongs to its publishers and artists. BGG's terms don't say anything specific about displaying cover art that I could find, so check them (and BGG's image policy) yourself before relying on this.
 
 ## Limits
 
 - BGG only has box dimensions for some editions. When none are on file you can enter them by hand or follow the "search web" link on the card.
 - Dimensions from a different language edition are used as an estimate when no English edition has any; the app does not show that edition's foreign title or cover.
 - A game's category is the first tag BGG lists for it (they are alphabetical), which is sometimes a period or theme rather than a genre. Edit it by hand if grouping by category matters to you.
-- **Nothing goes behind another box.** Each cube is treated as a single row from front to back, so a small game can't be tucked behind another small game yet, even when the cube is deep enough. Boxes lying flat do stack on top of each other, but only a box no wider than the one beneath it goes on top.
+- **Nothing goes behind another box.** Each cube is treated as a single row from front to back, so a small game can't be tucked behind another small game yet, even when the cube is deep enough. Boxes lying flat do stack on top of each other, up to the cube's height, and a box may overhang the one beneath it by up to 1.5 inches.
 - Shelf placement is a greedy fit (games are taken in priority order and put in the first cube with room), not an optimal bin-packing.

@@ -143,6 +143,9 @@ def assemble(ids, cache, snapshot):
             "p": (t.get("publishers") or [None])[0],
             "d": (t.get("designers") or [None])[0],
             "dims": entry.get("dims"),
+            # A link to BGG's own thumbnail. The demo hotlinks it (the image is loaded from BGG's
+            # server when shown); no artwork is copied into this repo.
+            "img": t.get("thumbnail"),
         })
     games.sort(key=lambda g: g["rk"])
     return {
