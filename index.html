@@ -261,7 +261,7 @@
 
       <div class="panel" style="margin-bottom:22px;">
         <h2>&#128269; Search by name</h2>
-        <div class="hint">Live search against BoardGameGeek. Pick a match, then optionally expand its editions to grab the exact box (Kickstarter/deluxe/etc.) with accurate dimensions.</div>
+        <div class="hint" id="searchHint">Live search against BoardGameGeek. Pick a match, then optionally expand its editions to grab the exact box (Kickstarter/deluxe/etc.) with accurate dimensions.</div>
         <div class="search-row">
           <input id="searchQueryInput" placeholder="e.g. Wingspan" />
           <button class="btn primary" id="runSearchBtn">Search</button>
@@ -904,11 +904,23 @@
 
   // ---------- rendering ----------
 
+  // The demo's Search only knows the games in catalog.json, so say so wherever Search appears.
+  // 500 is what ships; the real count is used once the catalog has loaded.
+  function demoCatalogSize() { return catalog ? catalog.count : 500; }
+
+  function applyDemoSearchNotes() {
+    if (!demoMode) return;
+    var n = demoCatalogSize();
+    document.getElementById("searchHint").innerHTML = "<strong>Demo: this search only covers BoardGameGeek&rsquo;s top " + n +
+      " games.</strong> Anything else won&rsquo;t be found (add it by hand below instead). Run Boxwatch locally to search all of BGG.";
+    document.getElementById("searchQueryInput").placeholder = "Search the top " + n + " games, e.g. Wingspan";
+  }
+
   function renderBanner() {
     document.getElementById("bannerHost").innerHTML = demoMode
-      ? '<div class="banner info"><span>Live demo: invented sample shelf, edits saved only in this browser. Search looks up a built-in snapshot ' +
-        'of BoardGameGeek&rsquo;s top games, with box sizes that are best guesses. For live BGG search, ' +
-        '<a href="https://github.com/krisrchesney/boxwatch">run it locally</a>.</span> ' +
+      ? '<div class="banner info"><span><strong>Demo: search only covers BoardGameGeek&rsquo;s top ' + demoCatalogSize() + ' games.</strong> ' +
+        'The shelf is invented sample data and your edits are saved only in this browser. Box sizes are best guesses. ' +
+        'To search every game on BGG, <a href="https://github.com/krisrchesney/boxwatch">run it locally</a>.</span> ' +
         '<button class="btn small" data-action="reset-demo" style="margin-left:auto;">Reset demo</button></div>'
       : "";
   }
@@ -1690,6 +1702,8 @@
       state = normalize(data);
       if (freshDemo) autoArrangeAll();
       renderAll();
+      applyDemoSearchNotes();
+      if (demoMode) loadCatalog().then(function () { renderBanner(); applyDemoSearchNotes(); }).catch(function () {});
       setSyncLabel(true, demoMode ? "Demo (saved in this browser)" : "Saved");
     }).catch(function () {
       setSyncLabel(false, "Couldn't reach local server");
