@@ -150,6 +150,9 @@
   .back-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
   .spine.back { position: absolute; bottom: 5px; pointer-events: auto; justify-content: flex-start; padding: 3px 0; filter: brightness(1.3); border-style: dashed; min-width: 0; }
   .spine.back.out { filter: none; }
+  .spine.back.flatback { writing-mode: horizontal-tb; justify-content: center; padding: 0; min-height: 8px; }
+  .spine.back.flatback .back-badge { width: auto; height: 100%; max-height: 14px; max-width: none; aspect-ratio: 1; }
+  .spine.back.hiddenback { opacity: 0.85; }
   .back-badge { writing-mode: horizontal-tb; width: 100%; max-width: 16px; aspect-ratio: 1; border-radius: 50%; background: #fff; color: #222; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
   .slot-behind { font-size: 9.5px; color: var(--accent, var(--ink-soft)); position: absolute; bottom: 2px; left: 6px; font-family: var(--font-mono); }
   .slot-box.clickable { cursor: pointer; }
@@ -165,6 +168,7 @@
   .plan-box { position: absolute; border-radius: 3px; border: 1px solid rgba(0,0,0,0.2); color: #fff; font-size: 11.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; overflow: hidden; box-sizing: border-box; cursor: pointer; }
   .plan-box span { writing-mode: vertical-rl; max-height: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 3px 0; }
   .plan-box.back { filter: brightness(1.3); border-style: dashed; }
+  .plan-box.back.hid { opacity: 0.8; }
   .plan-list { flex: 1; min-width: 200px; font-size: 13px; }
   .plan-list h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); margin: 0 0 6px; }
   .plan-list ul { list-style: none; margin: 0 0 14px; padding: 0; }
@@ -415,7 +419,7 @@
                 <select id="f_depthPref">
                   <option value="auto">Anywhere: front row, or behind other games when it fits</option>
                   <option value="front">Front row only</option>
-                  <option value="back">Back row only (behind other games)</option>
+                  <option value="back">Back row only (behind other games, even if hidden)</option>
                 </select>
               </div>
               <div class="field full">
@@ -494,7 +498,7 @@
         <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; margin-top:12px;">
           <input type="checkbox" class="allow-behind" /> Allow games behind games
         </label>
-        <div class="view-sub" style="margin-top:4px;">Small boxes may sit behind others in the same cube when their depths fit. A game can be kept to the front or back row from its Collection card.</div>
+        <div class="view-sub" style="margin-top:4px;">Small boxes may sit behind others in the same cube when their depths fit, and boxes lying flat can be stacked out of sight at the back. A game can be kept to the front or back row from its Collection card.</div>
       </div>
 
       <div class="settings-section">
@@ -699,9 +703,12 @@
   // column, as high as the cube allows (a box can sit on one a little narrower, see
   // FLAT_OVERHANG). The BACK row holds standing boxes tucked behind the front row. A back box
   // is only allowed where it is shallow enough for the front boxes in front of it (their
-  // depths add up to no more than the cube's depth) and stands PEEK inches taller than they do,
-  // so its spine still shows. Both rows are rebuilt the same way every time from the order the
-  // games were placed in, so nothing extra is saved.
+  // depths add up to no more than the cube's depth). A standing back box must also stand PEEK
+  // inches taller than they do, so its spine still shows. Two kinds of back box are exempt from
+  // that and may be completely hidden: boxes lying flat (they stack in the back just as they do in
+  // front, and are low by nature) and any game the user has set to "back row only". Both rows
+  // are rebuilt the same way every time from the order the games were placed in, so nothing
+  // extra is saved.
   var FLAT_OVERHANG = 1.5; // inches a flat box may overhang the one it sits on
   var PEEK = 0.75;         // inches a back box must stand above the boxes in front of it
   function newCube(slot) { return { slot: slot, cols: [], back: [], used: 0, count: 0 }; }
@@ -725,19 +732,45 @@
   function cubeValid(cube) {
     if (!cube.back.length) return true;
     var spans = frontSpans(cube);
-    return cube.back.every(function (b) {
+    var ok = cube.back.every(function (b, i) {
+      if (b.x + b.width > cube.slot.w + 0.001) return false;
+      for (var j = 0; j < i; j++) { // back columns can't overlap each other
+        if (overlaps(cube.back[j].x, cube.back[j].x + cube.back[j].width, b.x, b.x + b.width)) return false;
+      }
       return spans.every(function (f) {
         if (!overlaps(f.x0, f.x1, b.x, b.x + b.width)) return true;
-        return f.depth + b.depth <= cube.slot.d + 0.001 && b.up >= f.up + PEEK - 0.001;
+        return f.depth + b.depth <= cube.slot.d + 0.001 && (b.free || b.up >= f.up + PEEK - 0.001);
       });
     });
+    return ok;
+  }
+
+  // Every game in the back row, numbered in order, with whether its spine is hidden from the front.
+  function backEntries(cube) {
+    var spans = frontSpans(cube), n = 0, out = [];
+    cube.back.forEach(function (b) {
+      var tallestFront = -1, inFront = [];
+      spans.forEach(function (f) {
+        if (!overlaps(f.x0, f.x1, b.x, b.x + b.width)) return;
+        tallestFront = Math.max(tallestFront, f.up);
+        f.col.items.forEach(function (it) { inFront.push(it.g.name); });
+      });
+      var hidden = tallestFront >= 0 && b.up < tallestFront + 0.3;
+      var stacked = 0;
+      b.items.forEach(function (it) {
+        n++;
+        out.push({ b: b, it: it, n: n, hidden: hidden, inFront: inFront, below: stacked });
+        stacked += it.p.up || 0;
+      });
+    });
+    return out;
   }
 
   function snapshotCube(c) {
     return {
       used: c.used, count: c.count,
       cols: c.cols.map(function (col) { return { flat: col.flat, width: col.width, height: col.height, items: col.items.slice() }; }),
-      back: c.back.map(function (b) { return { x: b.x, width: b.width, up: b.up, depth: b.depth, items: b.items.slice() }; })
+      back: c.back.map(function (b) { return { x: b.x, width: b.width, up: b.up, depth: b.depth, flat: b.flat, free: b.free, items: b.items.slice() }; })
     };
   }
   function restoreCube(c, snap) { c.used = snap.used; c.count = snap.count; c.cols = snap.cols; c.back = snap.back; }
@@ -768,16 +801,37 @@
     return true;
   }
 
-  // Tuck a standing box behind the front row: just past the last back box, or lined up with
-  // the start of a later front column, whichever spot first clears the boxes in front.
-  function placeBack(cube, g, p) {
-    if (p.up === null || p.up < p.spine || !p.depth) return false; // only boxes standing with a known depth
+  // Tuck a box behind the front row. A flat box first tries to stack on a flat back column; any
+  // box then tries just past the last back column, or lined up with the start of a later front
+  // column, whichever spot first clears the boxes in front. `forced` (a "back row only" game)
+  // skips the spine-must-show rule.
+  function placeBack(cube, g, p, forced) {
+    if (p.up === null || !p.depth) return false; // needs a known size
+    var flat = p.up < p.spine;
+    var free = flat || forced;
+    var snap = snapshotCube(cube);
+    if (flat) {
+      for (var k = 0; k < cube.back.length; k++) {
+        var col = cube.back[k];
+        var grow = Math.max(0, p.spine - col.width);
+        if (col.flat && p.spine <= col.width + FLAT_OVERHANG && col.up + p.up <= cube.slot.h + 0.001) {
+          col.items.push({ g: g, p: p });
+          col.up += p.up;
+          col.width += grow;
+          col.depth = Math.max(col.depth, p.depth);
+          cube.count++;
+          if (cubeValid(cube)) return true;
+          restoreCube(cube, snap);
+          snap = snapshotCube(cube);
+        }
+      }
+    }
     var backEnd = cube.back.reduce(function (m, b) { return Math.max(m, b.x + b.width); }, 0);
     var starts = [backEnd];
     frontSpans(cube).forEach(function (f) { if (f.x0 > backEnd + 0.001) starts.push(f.x0); });
     for (var i = 0; i < starts.length; i++) {
       if (starts[i] + p.spine > cube.slot.w + 0.001) continue;
-      cube.back.push({ x: starts[i], width: p.spine, up: p.up, depth: p.depth, items: [{ g: g, p: p }] });
+      cube.back.push({ x: starts[i], width: p.spine, up: p.up, depth: p.depth, flat: flat, free: free, items: [{ g: g, p: p }] });
       if (cubeValid(cube)) { cube.count++; return true; }
       cube.back.pop();
     }
@@ -799,7 +853,7 @@
       restoreCube(cube, snap); // would have crowded a box already behind it
       snap = snapshotCube(cube);
     }
-    if (behindOk && placeBack(cube, g, p)) return p;
+    if (behindOk && placeBack(cube, g, p, pref === "back")) return p;
     restoreCube(cube, snap);
     return null;
   }
@@ -825,18 +879,12 @@
     if (!slot) return null;
     var cube = cubeFromOccupants(slot, occupantsOf(slot.id, null));
     var spans = frontSpans(cube);
-    var mine = cube.back.filter(function (b) { return b.items[0].g.id === g.id; })[0];
-    if (mine) {
-      var infront = [];
-      spans.forEach(function (f) {
-        if (overlaps(f.x0, f.x1, mine.x, mine.x + mine.width)) f.col.items.forEach(function (it) { infront.push(it.g.name); });
-      });
-      return { row: "back", others: infront };
-    }
+    var mine = backEntries(cube).filter(function (e) { return e.it.g.id === g.id; })[0];
+    if (mine) return { row: "back", others: mine.inFront };
     var span = spans.filter(function (f) { return f.col.items.some(function (it) { return it.g.id === g.id; }); })[0];
     if (!span) return null;
-    var behind = cube.back.filter(function (b) { return overlaps(span.x0, span.x1, b.x, b.x + b.width); })
-      .map(function (b) { return b.items[0].g.name; });
+    var behind = backEntries(cube).filter(function (e) { return overlaps(span.x0, span.x1, e.b.x, e.b.x + e.b.width); })
+      .map(function (e) { return e.it.g.name; });
     return { row: "front", others: behind };
   }
 
@@ -1524,19 +1572,23 @@
             innerHtml += '<div class="stack" style="flex:0 0 ' + Math.max(6, (col.width / u.cubeW) * 100) + '%">' + stack + "</div>";
           });
           // Boxes tucked behind the front row: lighter and numbered, drawn under the front boxes.
-          var backHtml = "";
-          cube.back.forEach(function (b, bi) {
-            var bg = b.items[0].g;
-            var hp = Math.min(100, Math.max(10, (b.up / u.cubeH) * 100));
-            var inFront = frontSpans(cube).filter(function (f) { return overlaps(f.x0, f.x1, b.x, b.x + b.width); })
-              .map(function (f) { return f.col.items[0].g.name; });
-            backHtml += '<div class="spine back' + (bg.status === "checked_out" ? " out" : "") + '" style="left:' + ((b.x / u.cubeW) * 100) + '%; width:' + ((b.width / u.cubeW) * 100) +
-              '%; height:' + hp + '%; background:' + (bg.status === "checked_out" ? "transparent" : categoryColor(bg.category)) + ';" data-action="open-detail" data-id="' + bg.id +
-              '" title="' + escapeHtml(bg.name + " (behind " + (inFront.join(", ") || "the front row") + ")") + '"><span class="back-badge">' + (bi + 1) + "</span></div>";
+          // A back box that is completely hidden has no spine to see; it is counted in the label.
+          var backHtml = "", entries = backEntries(cube), hiddenCount = 0;
+          entries.forEach(function (e) {
+            var bg = e.it.g, flatBack = e.b.flat;
+            if (e.hidden) hiddenCount++;
+            var itemUp = e.it.p.up || 0;
+            var hp = Math.min(100, Math.max(flatBack ? 6 : 10, (itemUp / u.cubeH) * 100));
+            var lift = flatBack ? "calc(" + ((e.below / u.cubeH) * 100) + "% + 2px)" : "5px";
+            backHtml += '<div class="spine back' + (flatBack ? " flatback" : "") + (e.hidden ? " hiddenback" : "") + (bg.status === "checked_out" ? " out" : "") +
+              '" style="left:' + ((e.b.x / u.cubeW) * 100) + '%; width:' + ((e.b.width / u.cubeW) * 100) + '%; height:' + hp + '%; bottom:' + lift +
+              '; background:' + (bg.status === "checked_out" ? "transparent" : categoryColor(bg.category)) + ';" data-action="open-detail" data-id="' + bg.id +
+              '" title="' + escapeHtml(bg.name + (flatBack ? " (lying flat" : " (standing") + ", behind " + (e.inFront.join(", ") || "the front row") + (e.hidden ? "; hidden from the front" : "") + ")") +
+              '"><span class="back-badge">' + e.n + "</span></div>";
           });
-          if (!cube.cols.length && !cube.back.length) innerHtml = '<div class="slot-empty-note">empty</div>';
+          if (!cube.cols.length && !entries.length) innerHtml = '<div class="slot-empty-note">empty</div>';
           box.innerHTML = '<div class="slot-row">' + (backHtml ? '<div class="back-layer">' + backHtml + "</div>" : "") + innerHtml + '</div>' +
-            (cube.back.length ? '<div class="slot-behind">+' + cube.back.length + " behind</div>" : "") +
+            (entries.length ? '<div class="slot-behind">+' + entries.length + " behind" + (hiddenCount ? " · " + hiddenCount + " hidden" : "") + "</div>" : "") +
             '<div class="slot-cap">' + Math.max(0, u.cubeW - cube.used).toFixed(0) + '″ free</div>';
           if (cube.count) {
             box.classList.add("clickable");
@@ -1756,11 +1808,17 @@
           (f.col.flat ? ' <span style="color:var(--ink-faint)">(lying flat)</span>' : "") + "</li>";
       });
     });
-    cube.back.forEach(function (b, i) {
-      var g = b.items[0].g;
-      boxes += '<div class="plan-box back" style="left:' + (b.x * P) + "px; width:" + (b.width * P) + "px; top:0; height:" + Math.max(8, b.depth * P) + "px; background:" + categoryColor(g.category) +
-        ';" data-action="open-detail" data-id="' + g.id + '" title="' + escapeHtml(g.name) + '"><span>' + (i + 1) + " " + escapeHtml(g.name) + "</span></div>";
-      backList += '<li><span class="num">' + (i + 1) + '</span><a data-action="open-detail" data-id="' + g.id + '">' + escapeHtml(g.name) + "</a></li>";
+    var entries = backEntries(cube);
+    entries.forEach(function (e) {
+      var g = e.it.g;
+      if (e.it === e.b.items[0]) { // one rectangle per column; a flat stack shares its footprint
+        var count = e.b.items.length;
+        boxes += '<div class="plan-box back' + (e.hidden ? " hid" : "") + '" style="left:' + (e.b.x * P) + "px; width:" + (e.b.width * P) + "px; top:0; height:" + Math.max(8, e.b.depth * P) + "px; background:" + categoryColor(g.category) +
+          ';" data-action="open-detail" data-id="' + g.id + '" title="' + escapeHtml(e.b.items.map(function (it) { return it.g.name; }).join(", ")) + '"><span>' + e.n + " " + escapeHtml(g.name) + (count > 1 ? " +" + (count - 1) : "") + "</span></div>";
+      }
+      backList += '<li><span class="num">' + e.n + '</span><a data-action="open-detail" data-id="' + g.id + '">' + escapeHtml(g.name) + "</a>" +
+        (e.b.flat ? ' <span style="color:var(--ink-faint)">(lying flat)</span>' : "") +
+        (e.hidden ? ' <span style="color:var(--ink-faint)">(hidden from the front)</span>' : "") + "</li>";
     });
     var host = document.getElementById("cubeHost");
     var backdrop = document.createElement("div");
@@ -1782,8 +1840,9 @@
             "<h3>Behind them</h3><ul>" + (backList || '<li style="color:var(--ink-faint)">Nothing is behind another box here.</li>') + "</ul>" +
           "</div>" +
         "</div>" +
-        '<p class="plan-note">A box goes behind another only when their depths add up to ' + slot.d + "″ or less and the back one stands at least " + PEEK +
-          "″ taller, so its spine still shows. A game can be kept to the front or back row from its Collection card.</p>" +
+        '<p class="plan-note">A box goes behind another only when their depths add up to ' + slot.d + "″ or less. A standing back box must also stand at least " + PEEK +
+          "″ taller than the boxes in front, so its spine still shows. Boxes lying flat, and games set to Back row only, can be tucked away completely out of sight. " +
+          "Keep a game to the front row from its Collection card if you want to see it.</p>" +
       "</div>";
     host.innerHTML = "";
     host.appendChild(backdrop);
