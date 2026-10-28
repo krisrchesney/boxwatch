@@ -41,6 +41,9 @@ DEMO_GAMES = [
     "Brass: Birmingham", "Great Western Trail", "Root", "Spirit Island", "Ark Nova", "Scythe",
 ]
 CHECKED_OUT = "Wingspan"  # one game out on loan, so the dashed "checked out" spot shows on the shelf
+# Per-game choices, to show the controls: this one lies flat and is kept to the back row, so it is
+# tucked away out of sight behind the front boxes (the cube's label says how many are hidden).
+PLACEMENT_OVERRIDES = {"Lost Cities": {"orientation": "horizontal", "depthPref": "back"}}
 
 
 def spine_if_it_fits(dims):
@@ -106,10 +109,11 @@ def main():
             "bggCategories": c.get("c") or [], "bggMechanics": c.get("m") or [],
             "publisher": c.get("p") or "", "designer": c.get("d") or "", "bggRank": c["rk"],
             "dims": {"a": dims[0], "b": dims[1], "c": dims[2]},
-            "orientation": "auto",
+            "orientation": "auto", "depthPref": "auto",
             "bggUrl": "https://boardgamegeek.com/boardgame/" + str(c["id"]),
             "isExpansion": False, "expandsOf": "", "parentGameId": "", "storedInParent": False,
         })
+        games[-1].update(PLACEMENT_OVERRIDES.get(c["n"], {}))
 
     state = {
         "version": 1,
