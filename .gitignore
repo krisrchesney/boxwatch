@@ -9,3 +9,5 @@ boxwatch-data.json.tmp
 # Local scratch
 .venv/
 *.log
+scripts/.catalog_cache.json
+scripts/.catalog_cache.json.tmp

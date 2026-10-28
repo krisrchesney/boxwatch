@@ -77,6 +77,7 @@
   .nav-btn:hover { background: var(--paper); color: var(--ink); }
   .nav-btn.active { background: var(--accent-soft); color: var(--accent-strong); }
   .nav-footer { margin-top: auto; padding: 10px; font-size: 12px; color: var(--ink-faint); }
+  .credit { margin-top: 44px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-soft); }
   .sync-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; padding: 4px 8px; border-radius: 100px; background: var(--paper); border: 1px solid var(--line); }
   .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
   .sync-pill.off .sync-dot { background: var(--danger); }
@@ -399,6 +400,10 @@
         </div>
       </div>
     </section>
+    <footer class="credit">
+      <a href="https://boardgamegeek.com" target="_blank" rel="noopener"><img src="powered-by-bgg.png" alt="Powered by BGG" height="40" onerror="this.remove()" /></a>
+      <span>Game data from <a href="https://boardgamegeek.com" target="_blank" rel="noopener">BoardGameGeek</a>. Ratings, ranks and box sizes are BGG's, not ours.</span>
+    </footer>
   </main>
 
   <div class="bottom-tabs">
@@ -636,8 +641,58 @@
   var demoMode = false;
   var freshDemo = false;
   var DEMO_KEY = "boxwatch-demo-v1";
-  var DEMO_SEARCH_MSG = "Search runs through the local Python server, which keeps your BoardGameGeek API token private. " +
-    "This hosted demo has no server, so run Boxwatch locally to use it (see the README on GitHub).";
+  var DEMO_SEARCH_MSG = "The built-in game list couldn't load. Live BoardGameGeek search runs through the local Python server, " +
+    "which keeps your API token private, so run Boxwatch locally to use it (see the README on GitHub).";
+  var DEMO_EDITIONS_MSG = "Browsing editions needs live BoardGameGeek access through the local Python server, " +
+    "so it isn't available in this hosted demo. Run Boxwatch locally to use it (see the README on GitHub).";
+
+  // The hosted demo has no server to ask BGG, so Search looks names up in catalog.json:
+  // a static snapshot of BGG's top-ranked games, built by scripts/build_catalog.py.
+  var catalog = null;
+
+  function loadCatalog() {
+    if (catalog) return Promise.resolve(catalog);
+    return fetch("catalog.json").then(function (r) {
+      if (!r.ok) throw new Error("no catalog");
+      return r.json();
+    }).then(function (c) { catalog = c; return c; });
+  }
+
+  function foldName(s) {
+    return String(s == null ? "" : s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+  }
+
+  // Shape a catalog entry like a server search result so the rest of the app
+  // (rendering, thingToGame) treats both the same way.
+  function catalogToResult(g) {
+    function s(v) { return v == null ? null : String(v); }
+    return {
+      id: String(g.id), itemType: "boardgame", expandsId: null, expandsName: null,
+      name: g.n, categories: g.c || [], mechanics: g.m || [],
+      publishers: g.p ? [g.p] : [], designers: g.d ? [g.d] : [], rank: g.rk,
+      yearpublished: s(g.y), minplayers: s(g.mn), maxplayers: s(g.mx), playingtime: s(g.t),
+      thumbnail: null, image: null, rating: g.r, numratings: g.u, complexity: g.w,
+      bestPlayers: g.best || null, bggUrl: "https://boardgamegeek.com/boardgame/" + g.id,
+      catalogDims: g.dims || null
+    };
+  }
+
+  function searchCatalog(q) {
+    var folded = foldName(q);
+    if (!folded) return [];
+    var terms = folded.split(" ");
+    var hits = [];
+    catalog.games.forEach(function (g) {
+      var name = g._f || (g._f = foldName(g.n));
+      for (var i = 0; i < terms.length; i++) if (name.indexOf(terms[i]) === -1) return;
+      // exact title, then title starts with the query, then a word starts with it, then anywhere
+      var tier = name === folded ? 0 : name.indexOf(folded) === 0 ? 1 : (" " + name).indexOf(" " + folded) !== -1 ? 2 : 3;
+      hits.push({ tier: tier, rank: g.rk, game: g });
+    });
+    hits.sort(function (a, b) { return a.tier - b.tier || a.rank - b.rank; });
+    return hits.slice(0, 8).map(function (h) { return catalogToResult(h.game); });
+  }
 
   function loadDemoState() {
     demoMode = true;
@@ -702,7 +757,20 @@
     var statusEl = document.getElementById("searchStatus");
     var host = document.getElementById("searchResultsHost");
     if (!q) return;
-    if (demoMode) { statusEl.textContent = DEMO_SEARCH_MSG; return; }
+    if (demoMode) {
+      lastResults = [];
+      expandedVersions = {};
+      host.innerHTML = "";
+      statusEl.textContent = "Searching the built-in list…";
+      loadCatalog().then(function () {
+        lastResults = searchCatalog(q);
+        statusEl.textContent = lastResults.length
+          ? lastResults.length + " match" + (lastResults.length === 1 ? "" : "es") + " in the built-in snapshot of BoardGameGeek's top " + catalog.count + " games"
+          : "Nothing in the built-in list of BoardGameGeek's top " + catalog.count + " games. It's a snapshot, not all of BGG. Add the game by hand below, or run Boxwatch locally for live search.";
+        renderSearchResults();
+      }).catch(function () { statusEl.textContent = DEMO_SEARCH_MSG; });
+      return;
+    }
     var mySeq = ++searchSeq;
     lastResults = [];
     expandedVersions = {};
@@ -774,9 +842,10 @@
             (r.minplayers || r.maxplayers ? (r.minplayers || "?") + "–" + (r.maxplayers || "?") + "p" : "") +
             (r.bestPlayers ? " · best: " + r.bestPlayers : "") +
           "</div>" +
+          (r.catalogDims ? '<div class="stat-line mono">box ≈ ' + r.catalogDims.map(function (v) { return Math.round(v * 10) / 10; }).join("″ × ") + "″</div>" : "") +
           '<div class="row-actions">' +
             '<button class="btn small primary" data-action="add-base" data-id="' + r.id + '">' + (isExpansion ? "Add expansion" : "Add base game") + "</button>" +
-            '<button class="btn small ghost" data-action="toggle-versions" data-id="' + r.id + '">' + (versions ? "Hide editions" : "See editions ▾") + "</button>" +
+            (demoMode ? "" : '<button class="btn small ghost" data-action="toggle-versions" data-id="' + r.id + '">' + (versions ? "Hide editions" : "See editions ▾") + "</button>") +
           "</div>" +
           versionsHtml +
         "</div>";
@@ -837,8 +906,9 @@
 
   function renderBanner() {
     document.getElementById("bannerHost").innerHTML = demoMode
-      ? '<div class="banner info"><span>Live demo with invented sample games, saved only in this browser. ' +
-        'BGG search needs the local server &mdash; <a href="https://github.com/krisrchesney/boxwatch">get it on GitHub</a>.</span> ' +
+      ? '<div class="banner info"><span>Live demo: invented sample shelf, edits saved only in this browser. Search looks up a built-in snapshot ' +
+        'of BoardGameGeek&rsquo;s top games, with box sizes that are best guesses. For live BGG search, ' +
+        '<a href="https://github.com/krisrchesney/boxwatch">run it locally</a>.</span> ' +
         '<button class="btn small" data-action="reset-demo" style="margin-left:auto;">Reset demo</button></div>'
       : "";
   }
@@ -1358,7 +1428,7 @@
       var bggId = extractBggId(document.getElementById("f_bggUrl").value);
       var host = document.getElementById("editEditionsHost");
       if (demoMode) {
-        host.innerHTML = '<div class="hint" style="margin-top:8px;">' + escapeHtml(DEMO_SEARCH_MSG) + "</div>";
+        host.innerHTML = '<div class="hint" style="margin-top:8px;">' + escapeHtml(DEMO_EDITIONS_MSG) + "</div>";
         return;
       }
       if (!bggId) {
@@ -1545,6 +1615,12 @@
       if (action === "add-base") {
         var r = lastResults.filter(function (x) { return x.id === id; })[0];
         if (!r) return;
+        if (demoMode) {
+          // No server to ask for editions: use the catalog's best-guess box size directly.
+          var cd = r.catalogDims;
+          addGameToCollection(thingToGame(r, cd ? { length: cd[0], width: cd[1], depth: cd[2], languages: ["English"] } : null));
+          return;
+        }
         var originalLabel = el.textContent;
         el.disabled = true;
         el.textContent = "Adding…";

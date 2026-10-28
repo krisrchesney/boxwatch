@@ -358,6 +358,10 @@ class Handler(BaseHTTPRequestHandler):
             self.serve_file(APP_FILE, "text/html; charset=utf-8")
             return
 
+        if parsed.path == "/powered-by-bgg.png":  # BGG's attribution logo, if you've added it
+            self.serve_file(os.path.join(HERE, "powered-by-bgg.png"), "image/png")
+            return
+
         if parsed.path == "/api/state":
             self.send_json(load_state())
             return
