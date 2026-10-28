@@ -132,6 +132,14 @@
   .slot-row { position: absolute; inset: 5px 5px 15px 5px; display: flex; align-items: flex-end; gap: 2px; }
   .slot-empty-note { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10.5px; color: var(--ink-faint); pointer-events: none; }
   .spine { border-radius: 3px; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; font-size: 10.5px; font-weight: 700; color: #fff; padding: 4px 2px; cursor: pointer; text-overflow: ellipsis; overflow: hidden; min-width: 14px; border: 1px solid rgba(0,0,0,0.15); }
+  .prio-row { display: flex; flex-wrap: wrap; gap: 5px; }
+  .prio { display: inline-flex; align-items: baseline; gap: 5px; padding: 2px 8px; border-radius: 100px; background: var(--paper); border: 1px solid var(--line); font-size: 11.5px; font-weight: 600; color: var(--ink); }
+  .prio em { font-style: normal; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); }
+  .prio.light { background: color-mix(in srgb, var(--light-chip) 18%, transparent); }
+  .prio.medium { background: color-mix(in srgb, var(--medium-chip) 18%, transparent); }
+  .prio.heavy { background: color-mix(in srgb, var(--heavy-chip) 18%, transparent); }
+  .card-orient { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink-faint); }
+  .card-orient select { flex: 1; min-width: 0; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--surface-raised); color: var(--ink); font-size: 12px; }
   .stack { align-self: stretch; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 14px; }
   .stack .spine { flex: 0 0 auto; width: 100%; min-height: 8px; }
   .spine.flat { writing-mode: horizontal-tb; padding: 0 4px; white-space: nowrap; }
@@ -286,14 +294,14 @@
         </div>
       </div>
       <div class="orient-bar">
-        <span class="lbl">How boxes sit</span>
-        <div class="seg" id="orientSeg" role="group" aria-label="How boxes sit on the shelf">
+        <span class="lbl">Default for how boxes sit</span>
+        <div class="seg orient-seg" id="orientSeg" role="group" aria-label="Default for how boxes sit on the shelf">
           <button type="button" data-orient="best" aria-pressed="true">Best fit</button>
           <button type="button" data-orient="vertical" aria-pressed="false">Standing up</button>
           <button type="button" data-orient="horizontal" aria-pressed="false">Lying flat</button>
         </div>
       </div>
-      <p class="orient-help" id="orientHelp"></p>
+      <p class="orient-help orient-help-text" id="orientHelp"></p>
       <div id="shelfHost"></div>
     </section>
 
@@ -435,6 +443,17 @@
       </div>
 
       <div class="settings-section">
+        <h2>How boxes sit</h2>
+        <div class="view-sub" style="margin-bottom:10px;">The default for every game. A game with its own choice (on its card in Collection, or in its Edit form) keeps that instead.</div>
+        <div class="seg orient-seg" role="group" aria-label="Default for how boxes sit on the shelf">
+          <button type="button" data-orient="best" aria-pressed="true">Best fit</button>
+          <button type="button" data-orient="vertical" aria-pressed="false">Standing up</button>
+          <button type="button" data-orient="horizontal" aria-pressed="false">Lying flat</button>
+        </div>
+        <p class="orient-help orient-help-text" style="margin-top:8px;"></p>
+      </div>
+
+      <div class="settings-section">
         <h2>Data</h2>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn" id="exportBtn">Export backup (.json)</button>
@@ -444,7 +463,7 @@
     </section>
     <footer class="credit">
       <a class="bgg-logo" href="https://boardgamegeek.com" target="_blank" rel="noopener"><img src="powered-by-bgg.png" alt="Powered by BGG" height="44" onerror="this.parentNode.remove()" /></a>
-      <span>Game data from <a href="https://boardgamegeek.com" target="_blank" rel="noopener">BoardGameGeek</a>. Ratings, ranks and box sizes are BGG's, not ours.</span>
+      <span>Game data from <a href="https://boardgamegeek.com" target="_blank" rel="noopener">BoardGameGeek</a>. Ratings, ranks and box sizes are BGG's, not ours. Cover art is loaded from BoardGameGeek and belongs to its publishers and artists.</span>
     </footer>
   </main>
 
@@ -631,8 +650,9 @@
 
   // One cube's contents. A standing box takes a column as wide as its spine. Boxes lying
   // flat stack on top of each other in a column, as high as the cube allows, and a box
-  // can sit on one at least as wide as itself. Each cube is a single row: nothing goes
+  // can sit on one that is a little narrower (see FLAT_OVERHANG). Each cube is a single row: nothing goes
   // behind another box.
+  var FLAT_OVERHANG = 1.5; // inches a flat box may overhang the one it sits on
   function newCube(slot) { return { slot: slot, cols: [], used: 0, count: 0 }; }
 
   // Adds the game if it fits; returns its placement, or null (the cube is left unchanged).
@@ -643,9 +663,15 @@
     if (flat) {
       for (var i = 0; i < cube.cols.length; i++) {
         var col = cube.cols[i];
-        if (col.flat && p.spine <= col.width + 0.001 && col.height + p.up <= cube.slot.h + 0.001) {
+        // A flat box can sit on one beneath it that is a little narrower (an overhang of
+        // FLAT_OVERHANG inches is fine); the column then widens to the wider box.
+        var grow = Math.max(0, p.spine - col.width);
+        if (col.flat && p.spine <= col.width + FLAT_OVERHANG && col.height + p.up <= cube.slot.h + 0.001 &&
+            cube.used + grow <= cube.slot.w + 0.001) {
           col.items.push({ g: g, p: p });
           col.height += p.up;
+          col.width += grow;
+          cube.used += grow;
           cube.count++;
           return p;
         }
@@ -765,7 +791,7 @@
       name: g.n, categories: g.c || [], mechanics: g.m || [],
       publishers: g.p ? [g.p] : [], designers: g.d ? [g.d] : [], rank: g.rk,
       yearpublished: s(g.y), minplayers: s(g.mn), maxplayers: s(g.mx), playingtime: s(g.t),
-      thumbnail: null, image: null, rating: g.r, numratings: g.u, complexity: g.w,
+      thumbnail: g.img || null, image: g.img || null, rating: g.r, numratings: g.u, complexity: g.w,
       bestPlayers: g.best || null, bggUrl: "https://boardgamegeek.com/boardgame/" + g.id,
       catalogDims: g.dims || null
     };
@@ -891,7 +917,7 @@
     lastResults.forEach(function (r) {
       var card = document.createElement("div");
       card.className = "search-result-card";
-      var thumb = r.thumbnail ? '<img class="thumb" src="' + safeUrl(r.thumbnail) + '" alt="" />' : '<div class="thumb-fallback">' + (r.name || "?").charAt(0).toUpperCase() + "</div>";
+      var thumb = (r.thumbnail && safeUrl(r.thumbnail)) ? coverImg(r.thumbnail, "thumb") : '<div class="thumb-fallback">' + (r.name || "?").charAt(0).toUpperCase() + "</div>";
       var versions = expandedVersions[r.id];
       var versionsHtml = "";
       if (versions) {
@@ -932,7 +958,7 @@
           '<div class="stat-line">' +
             (r.rating ? "★ " + r.rating + " · " : "") +
             (r.complexity ? complexityText(r.complexity) + " · " : "") +
-            (r.minplayers || r.maxplayers ? (r.minplayers || "?") + "–" + (r.maxplayers || "?") + "p" : "") +
+            (r.minplayers || r.maxplayers ? playerRange(r.minplayers, r.maxplayers) + "p" : "") +
             (r.bestPlayers ? " · best: " + r.bestPlayers : "") +
           "</div>" +
           (r.catalogDims ? '<div class="stat-line mono">box ≈ ' + r.catalogDims.map(function (v) { return Math.round(v * 10) / 10; }).join("″ × ") + "″</div>" : "") +
@@ -1042,13 +1068,49 @@
     horizontal: "Every box lies on its back, stacked on top of each other up to the height of the cube. A box that can't lie flat falls back to best fit."
   };
 
+  var ORIENT_NAMES = { best: "Best fit", vertical: "Standing up", horizontal: "Lying flat" };
+
+  // The default lives in two places (the Shelves tab and Settings); both show the same state.
   function renderOrientControl() {
     var mode = state.shelfOrientation;
-    document.querySelectorAll("#orientSeg button").forEach(function (b) {
+    document.querySelectorAll(".orient-seg button").forEach(function (b) {
       b.setAttribute("aria-pressed", b.dataset.orient === mode ? "true" : "false");
     });
-    document.getElementById("orientHelp").textContent = ORIENT_HELP[mode] +
-      " Each cube holds a single row of boxes; nothing goes behind another box. To change one game, edit it and use “How this box sits”.";
+    var help = ORIENT_HELP[mode] + " This is only the default: a game with its own choice (on its Collection card or in its Edit form) keeps that. " +
+      "Each cube is a single row, so nothing goes behind another box.";
+    document.querySelectorAll(".orient-help-text").forEach(function (p) { p.textContent = help; });
+  }
+
+  // A game's own orientation always beats the shelf-wide default. Change one game and keep it
+  // in its cube if it still fits that way; otherwise find it a new home.
+  function setGameOrientation(id, value) {
+    var g = state.games.filter(function (x) { return x.id === id; })[0];
+    if (!g) return;
+    g.orientation = value;
+    var note = "";
+    if (!g.storedInParent) {
+      var kept = false;
+      var slot = g.homeSlot && allSlots().filter(function (s) { return s.id === g.homeSlot; })[0];
+      if (slot) {
+        var cube = cubeFromOccupants(slot, occupantsOf(slot.id, g.id));
+        if (tryPlaceInCube(cube, g)) { g.slotIndex = cube.count - 1; kept = true; }
+      }
+      if (!kept) {
+        var hadHome = !!g.homeSlot;
+        if (quickPlace(g)) { if (hadHome) note = g.name + " no longer fit its old cube that way, so it moved to " + slotLabel(g.homeSlot) + "."; }
+        else note = g.name + " can't sit that way in any cube, so it is unassigned. Choose another way for it to sit, or add shelf space in Settings.";
+      }
+    }
+    renderAll();
+    schedulePersist();
+    if (note) alert(note);
+  }
+
+  function orientSelectHtml(g) {
+    var cur = ["best", "vertical", "horizontal"].indexOf(g.orientation) !== -1 ? g.orientation : "auto";
+    var opts = [["auto", "Default (" + ORIENT_NAMES[state.shelfOrientation] + ")"], ["best", "Best fit"], ["vertical", "Standing up"], ["horizontal", "Lying flat"]];
+    return '<select data-action="card-orient" data-id="' + g.id + '" aria-label="How ' + escapeHtml(g.name) + ' sits on the shelf">' +
+      opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === cur ? " selected" : "") + ">" + escapeHtml(o[1]) + "</option>"; }).join("") + "</select>";
   }
 
   function setShelfOrientation(mode) {
@@ -1115,6 +1177,36 @@
     return slotLabel(g.homeSlot);
   }
 
+  // Box sizes to one decimal for display; the stored values keep full precision.
+  function dimText(d) {
+    function r(v) { return Math.round(Number(v) * 10) / 10; }
+    return r(d.a) + "″ × " + r(d.b) + "″ × " + r(d.c) + "″";
+  }
+
+  function playerRange(min, max) {
+    var a = min || "?", b = max || "?";
+    return String(a) === String(b) ? String(a) : a + "–" + b;
+  }
+
+  // The fields shelves are sorted by, in priority order, each labeled so "Heavy" can only be read
+  // as complexity (rules, not box weight) and the player-count bucket is clear.
+  function priorityChips(g) {
+    return state.priorityOrder.map(function (f) {
+      var def = PRIORITY_FIELDS[f], v = def.bucket(g), cls = "", tip = "";
+      if (f === "complexity") { cls = " " + weightClass(g.complexity); tip = "Rules complexity " + (g.complexity || "?") + " out of 5 (BoardGameGeek weight). Not physical weight."; }
+      else if (f === "playerCount") tip = "Grouped by the most players it supports (" + (g.maxPlayers || "?") + ")";
+      else if (f === "alphabetical") tip = "Sorted by the first letter of the name";
+      return '<span class="prio' + cls + '"' + (tip ? ' title="' + escapeHtml(tip) + '"' : "") + "><em>" + escapeHtml(def.label) + "</em>" + escapeHtml(v) + "</span>";
+    }).join("");
+  }
+
+  // Cover art is hotlinked: the image loads from BGG's server and nothing is copied into this
+  // project. If it fails to load the tile just goes blank.
+  function coverImg(url, cls) {
+    var u = safeUrl(url);
+    return u ? "<img" + (cls ? ' class="' + cls + '"' : "") + ' src="' + u + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.visibility=\'hidden\'" />' : "";
+  }
+
   function renderCollection() {
     var q = (document.getElementById("collectionSearch").value || "").toLowerCase();
     var sortBy = document.getElementById("collectionSort").value;
@@ -1155,7 +1247,7 @@
       card.className = "game-card" + (g.status === "checked_out" ? " checked-out" : "");
       card.dataset.id = g.id;
       card.dataset.action = "open-detail";
-      var photoHtml = g.photo ? '<img src="' + safeUrl(g.photo) + '" alt="" />' : (g.name || "?").charAt(0).toUpperCase();
+      var photoHtml = (g.photo && safeUrl(g.photo)) ? coverImg(g.photo) : (g.name || "?").charAt(0).toUpperCase();
       card.innerHTML =
         '<div class="card-photo">' + photoHtml +
           (g.status === "checked_out" ? '<span class="status-flag">Checked out</span>' : "") +
@@ -1166,13 +1258,14 @@
           '<div class="card-meta-row">' +
             (g.isExpansion ? '<span class="expansion-badge">Expansion</span>' : "") +
             (g.rating ? '<span class="rating-chip">★ ' + Number(g.rating).toFixed(1) + "</span>" : "") +
-            (g.complexity ? '<span class="weight-chip ' + weightClass(g.complexity) + '" title="Rules complexity ' + g.complexity + ' out of 5 (BoardGameGeek weight). Not physical weight.">' + complexityText(g.complexity) + "</span>" : "") +
-            (g.minPlayers || g.maxPlayers ? "<span>" + (g.minPlayers || "?") + "–" + (g.maxPlayers || "?") + "p</span>" : "") +
+            (g.minPlayers || g.maxPlayers ? "<span>" + playerRange(g.minPlayers, g.maxPlayers) + " players</span>" : "") +
           "</div>" +
+          '<div class="prio-row" title="The fields your shelves are sorted by, in priority order">' + priorityChips(g) + "</div>" +
           (g.isExpansion && g.expandsOf ? '<div class="expands-note">Expands: ' + escapeHtml(g.expandsOf) + "</div>" : "") +
-          '<div class="card-dims mono">' + (g.dims && (g.dims.a || g.dims.b || g.dims.c) ? g.dims.a + "″ × " + g.dims.b + "″ × " + g.dims.c + "″" :
+          '<div class="card-dims mono">' + (g.dims && (g.dims.a || g.dims.b || g.dims.c) ? dimText(g.dims) :
             '<a href="#" data-action="edit-game" data-id="' + g.id + '" style="color:var(--danger);">No dimensions &mdash; click to add</a> · ' +
             '<a href="https://www.google.com/search?q=' + encodeURIComponent(g.name + " board game box dimensions") + '" target="_blank" rel="noopener">search web</a>') + "</div>" +
+          (g.storedInParent ? "" : '<div class="card-orient" data-action="noop"><span>How it sits</span>' + orientSelectHtml(g) + "</div>") +
           '<div class="card-slot">' + locationLabel(g) + "</div>" +
           '<div class="card-actions">' +
             '<button class="btn small" data-action="toggle-checkout" data-id="' + g.id + '">' + (g.status === "checked_out" ? "Check in" : "Check out") + "</button>" +
@@ -1402,13 +1495,13 @@
         '<h2>' + escapeHtml(g.name) + "</h2>" +
         (g.editionName ? '<div style="color:var(--ink-soft); font-size:13px;">' + escapeHtml(g.editionName) + "</div>" : "") +
         '<div style="color:var(--ink-soft); font-size:12.5px;">' + (g.yearPublished || "") + (g.category ? " · " + g.category : "") + "</div>" +
-        (g.photo ? '<img class="drawer-photo" src="' + safeUrl(g.photo) + '" />' : "") +
+        (g.photo ? coverImg(g.photo, "drawer-photo") : "") +
         '<div class="drawer-stats">' +
           '<div><div class="k">Rating</div><div>' + (g.rating ? "★ " + g.rating : "—") + " (" + (g.numRatings || 0) + " ratings)</div></div>" +
           '<div><div class="k">Complexity</div><div>' + (g.complexity ? g.complexity + " / 5 — " + complexityText(g.complexity) + " (rules, not box weight)" : "—") + "</div></div>" +
-          '<div><div class="k">Players</div><div>' + (g.minPlayers || "?") + "–" + (g.maxPlayers || "?") + (g.bestPlayers ? " (best: " + g.bestPlayers + ")" : "") + "</div></div>" +
+          '<div><div class="k">Players</div><div>' + playerRange(g.minPlayers, g.maxPlayers) + (g.bestPlayers ? " (best: " + g.bestPlayers + ")" : "") + "</div></div>" +
           '<div><div class="k">Play time</div><div>' + (g.playTime || "—") + " min</div></div>" +
-          '<div><div class="k">Dimensions</div><div>' + (g.dims && (g.dims.a || g.dims.b || g.dims.c) ? g.dims.a + "″ × " + g.dims.b + "″ × " + g.dims.c + "″" :
+          '<div><div class="k">Dimensions</div><div>' + (g.dims && (g.dims.a || g.dims.b || g.dims.c) ? dimText(g.dims) :
             '<a href="https://www.google.com/search?q=' + encodeURIComponent(g.name + " board game box dimensions") + '" target="_blank" rel="noopener">search web ↗</a>') + "</div></div>" +
           '<div><div class="k">Location</div><div>' + locationLabel(g) + "</div></div>" +
           (g.bggRank ? '<div><div class="k">BGG rank</div><div>#' + g.bggRank + "</div></div>" : "") +
@@ -1638,7 +1731,7 @@
       state.groupTogether = e.target.checked;
       schedulePersist();
     });
-    document.getElementById("orientSeg").addEventListener("click", function (e) {
+    document.addEventListener("click", function (e) {
       var b = e.target.closest("[data-orient]");
       if (b) setShelfOrientation(b.dataset.orient);
     });
@@ -1693,6 +1786,8 @@
     });
 
     document.addEventListener("change", function (e) {
+      var co = e.target.closest('[data-action="card-orient"]');
+      if (co) { setGameOrientation(co.dataset.id, co.value); return; }
       var el = e.target.closest('[data-action="filter-language"]');
       if (!el) return;
       if (el.dataset.scope === "search") {
