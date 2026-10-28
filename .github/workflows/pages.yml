@@ -1,7 +1,8 @@
 name: Deploy demo to GitHub Pages
 
-# Publishes only the static demo (index.html + demo-data.json).
-# server.py, bgg_token.txt and any personal data are never uploaded.
+# Publishes only the static demo: index.html, demo-data.json, catalog.json and
+# (if present) the Powered by BGG logo. server.py, bgg_token.txt and any personal
+# data are never uploaded.
 
 on:
   push:
@@ -9,6 +10,8 @@ on:
     paths:
       - index.html
       - demo-data.json
+      - catalog.json
+      - powered-by-bgg.png
       - .github/workflows/pages.yml
   workflow_dispatch:
 
@@ -24,7 +27,7 @@ concurrency:
 jobs:
   deploy:
     # Free GitHub plans can't serve Pages from a private repo, so skip (rather than
-    # fail) until the repo is made public. After flipping it public, run this
+    # fail) until the repo is public. After flipping it public, run this
     # workflow once from the Actions tab (Run workflow) to publish the demo.
     if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-latest
@@ -36,7 +39,8 @@ jobs:
       - name: Assemble site
         run: |
           mkdir _site
-          cp index.html demo-data.json _site/
+          cp index.html demo-data.json catalog.json _site/
+          if [ -f powered-by-bgg.png ]; then cp powered-by-bgg.png _site/; fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
