@@ -13,6 +13,7 @@ shelf is about 70% full, which leaves room to rearrange.
 Edit DEMO_GAMES (or ROWS/COLS/FILL) and re-run. Names must match catalog.json exactly.
 """
 
+import hashlib
 import json
 import os
 import sys
@@ -119,6 +120,10 @@ def main():
         "groupTogether": False,  # pack each cube full, so the first view shows several games per cube
         "shelfOrientation": "best",
     }
+    # Version stamp: the page keeps a visitor's saved edits only while this matches, so changing
+    # the sample shelf replaces stale saved copies instead of being hidden by them.
+    state["demoVersion"] = hashlib.sha1(
+        json.dumps(state, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()[:10]
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(state, f, ensure_ascii=False, indent=2)
     print(f"wrote {OUT}: {len(games)} real games from the top 500, Kallax {ROWS}x{COLS} ({ROWS * COLS} cubes), "
