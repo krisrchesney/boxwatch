@@ -77,6 +77,8 @@
   .nav-btn:hover { background: var(--paper); color: var(--ink); }
   .nav-btn.active { background: var(--accent-soft); color: var(--accent-strong); }
   .nav-footer { margin-top: auto; padding: 10px; font-size: 12px; color: var(--ink-faint); }
+  /* The logo's text is dark, so it sits on a white tile to stay legible in dark mode. */
+  .bgg-logo { background: #fff; border-radius: 8px; padding: 6px 14px; line-height: 0; }
   .credit { margin-top: 44px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-soft); }
   .sync-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; padding: 4px 8px; border-radius: 100px; background: var(--paper); border: 1px solid var(--line); }
   .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
@@ -401,7 +403,7 @@
       </div>
     </section>
     <footer class="credit">
-      <a href="https://boardgamegeek.com" target="_blank" rel="noopener"><img src="powered-by-bgg.png" alt="Powered by BGG" height="40" onerror="this.remove()" /></a>
+      <a class="bgg-logo" href="https://boardgamegeek.com" target="_blank" rel="noopener"><img src="powered-by-bgg.png" alt="Powered by BGG" height="44" onerror="this.parentNode.remove()" /></a>
       <span>Game data from <a href="https://boardgamegeek.com" target="_blank" rel="noopener">BoardGameGeek</a>. Ratings, ranks and box sizes are BGG's, not ours.</span>
     </footer>
   </main>
