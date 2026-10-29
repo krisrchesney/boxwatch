@@ -1,0 +1,23 @@
+name: Check
+
+# Runs the same check as the local Stop hook: compile all Python and run tests/.
+# Standard library only, so there is nothing to install.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      # A normal checkout (a real git repo, not a tarball): the hygiene tests
+      # run `git ls-files` to make sure no secrets or personal data are tracked.
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: python scripts/check.py
