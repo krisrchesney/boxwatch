@@ -30,10 +30,10 @@
       "maxPlayers": 2,
       "bestPlayers": "2",
       "playTime": "30",
-      "category": "Ancient",
+      "category": "Card Game",
       "bggCategories": [
-        "Ancient",
         "Card Game",
+        "Ancient",
         "City Building"
       ],
       "bggMechanics": [
@@ -161,10 +161,10 @@
       "maxPlayers": 2,
       "bestPlayers": "2",
       "playTime": "60",
-      "category": "Arabian",
+      "category": "Card Game",
       "bggCategories": [
-        "Arabian",
-        "Card Game"
+        "Card Game",
+        "Arabian"
       ],
       "bggMechanics": [
         "End Game Bonuses",
@@ -377,10 +377,10 @@
       "maxPlayers": 2,
       "bestPlayers": "2",
       "playTime": "20",
-      "category": "Animals",
+      "category": "Card Game",
       "bggCategories": [
-        "Animals",
         "Card Game",
+        "Animals",
         "Print & Play"
       ],
       "bggMechanics": [
@@ -421,10 +421,10 @@
       "maxPlayers": 2,
       "bestPlayers": "2",
       "playTime": "30",
-      "category": "Ancient",
+      "category": "Card Game",
       "bggCategories": [
-        "Ancient",
-        "Card Game"
+        "Card Game",
+        "Ancient"
       ],
       "bggMechanics": [
         "Card Play Conflict Resolution",
@@ -464,11 +464,11 @@
       "maxPlayers": 2,
       "bestPlayers": "2",
       "playTime": "30",
-      "category": "Card Game",
+      "category": "Word Game",
       "bggCategories": [
+        "Word Game",
         "Card Game",
-        "Deduction",
-        "Spies / Secret Agents"
+        "Deduction"
       ],
       "bggMechanics": [
         "Communication Limits",
@@ -508,10 +508,10 @@
       "maxPlayers": 2,
       "bestPlayers": "2",
       "playTime": "20",
-      "category": "Aviation / Flight",
+      "category": "Dice",
       "bggCategories": [
-        "Aviation / Flight",
-        "Dice"
+        "Dice",
+        "Aviation / Flight"
       ],
       "bggMechanics": [
         "Communication Limits",
@@ -595,11 +595,11 @@
       "maxPlayers": 8,
       "bestPlayers": "6",
       "playTime": "15",
-      "category": "Card Game",
+      "category": "Party Game",
       "bggCategories": [
+        "Party Game",
         "Card Game",
-        "Deduction",
-        "Party Game"
+        "Deduction"
       ],
       "bggMechanics": [
         "Communication Limits",
@@ -639,10 +639,10 @@
       "maxPlayers": 7,
       "bestPlayers": "6",
       "playTime": "60",
-      "category": "Deduction",
+      "category": "Party Game",
       "bggCategories": [
-        "Deduction",
         "Party Game",
+        "Deduction",
         "Word Game"
       ],
       "bggMechanics": [
@@ -683,10 +683,10 @@
       "maxPlayers": 5,
       "bestPlayers": "4",
       "playTime": "20",
-      "category": "Adventure",
+      "category": "Card Game",
       "bggCategories": [
-        "Adventure",
         "Card Game",
+        "Adventure",
         "Mythology"
       ],
       "bggMechanics": [
@@ -899,10 +899,10 @@
       "maxPlayers": 5,
       "bestPlayers": "2",
       "playTime": "45",
-      "category": "Medieval",
+      "category": "Territory Building",
       "bggCategories": [
-        "Medieval",
-        "Territory Building"
+        "Territory Building",
+        "Medieval"
       ],
       "bggMechanics": [
         "Area Majority / Influence",
@@ -1070,10 +1070,10 @@
       "maxPlayers": 4,
       "bestPlayers": "3",
       "playTime": "80",
-      "category": "Animals",
+      "category": "Card Game",
       "bggCategories": [
-        "Animals",
         "Card Game",
+        "Animals",
         "City Building"
       ],
       "bggMechanics": [
@@ -1114,10 +1114,10 @@
       "maxPlayers": 5,
       "bestPlayers": "3",
       "playTime": "70",
-      "category": "Animals",
+      "category": "Card Game",
       "bggCategories": [
-        "Animals",
         "Card Game",
+        "Animals",
         "Educational"
       ],
       "bggMechanics": [
@@ -1158,10 +1158,10 @@
       "maxPlayers": 5,
       "bestPlayers": "3",
       "playTime": "120",
-      "category": "Civilization",
+      "category": "Economic",
       "bggCategories": [
-        "Civilization",
         "Economic",
+        "Civilization",
         "Environmental"
       ],
       "bggMechanics": [
@@ -1202,10 +1202,10 @@
       "maxPlayers": 4,
       "bestPlayers": "4",
       "playTime": "120",
-      "category": "Age of Reason",
+      "category": "Economic",
       "bggCategories": [
-        "Age of Reason",
         "Economic",
+        "Age of Reason",
         "Industry / Manufacturing"
       ],
       "bggMechanics": [
@@ -1289,11 +1289,11 @@
       "maxPlayers": 4,
       "bestPlayers": "4",
       "playTime": "90",
-      "category": "Animals",
+      "category": "Wargame",
       "bggCategories": [
+        "Wargame",
         "Animals",
-        "Fantasy",
-        "Negotiation"
+        "Fantasy"
       ],
       "bggMechanics": [
         "Action Points",
@@ -1333,11 +1333,11 @@
       "maxPlayers": 4,
       "bestPlayers": "2",
       "playTime": "120",
-      "category": "Environmental",
+      "category": "Territory Building",
       "bggCategories": [
+        "Territory Building",
         "Environmental",
-        "Fantasy",
-        "Mythology"
+        "Fantasy"
       ],
       "bggMechanics": [
         "Action Retrieval",
@@ -1551,11 +1551,11 @@
       "maxPlayers": 4,
       "bestPlayers": "2",
       "playTime": "240",
-      "category": "Civil War",
+      "category": "Wargame",
       "bggCategories": [
+        "Wargame",
         "Civil War",
-        "Movies / TV / Radio theme",
-        "Science Fiction"
+        "Movies / TV / Radio theme"
       ],
       "bggMechanics": [
         "Area Majority / Influence",
@@ -1595,10 +1595,10 @@
       "maxPlayers": 4,
       "bestPlayers": "2",
       "playTime": "120",
-      "category": "Adventure",
+      "category": "Exploration",
       "bggCategories": [
-        "Adventure",
         "Exploration",
+        "Adventure",
         "Fantasy"
       ],
       "bggMechanics": [
@@ -1639,10 +1639,10 @@
       "maxPlayers": 4,
       "bestPlayers": "3",
       "playTime": "150",
-      "category": "Civilization",
+      "category": "Economic",
       "bggCategories": [
-        "Civilization",
         "Economic",
+        "Civilization",
         "Science Fiction"
       ],
       "bggMechanics": [
@@ -1726,10 +1726,10 @@
       "maxPlayers": 4,
       "bestPlayers": "2",
       "playTime": "150",
-      "category": "Adventure",
+      "category": "Card Game",
       "bggCategories": [
-        "Adventure",
         "Card Game",
+        "Adventure",
         "Fantasy"
       ],
       "bggMechanics": [
@@ -1770,11 +1770,11 @@
       "maxPlayers": 2,
       "bestPlayers": "2",
       "playTime": "180",
-      "category": "Modern Warfare",
+      "category": "Wargame",
       "bggCategories": [
+        "Wargame",
         "Modern Warfare",
-        "Political",
-        "Wargame"
+        "Political"
       ],
       "bggMechanics": [
         "Action / Event",
@@ -1814,11 +1814,11 @@
       "maxPlayers": 4,
       "bestPlayers": "2",
       "playTime": "90",
-      "category": "Animals",
+      "category": "Territory Building",
       "bggCategories": [
+        "Territory Building",
         "Animals",
-        "Medieval",
-        "Territory Building"
+        "Medieval"
       ],
       "bggMechanics": [
         "Delayed Purchase",
@@ -1902,10 +1902,10 @@
       "maxPlayers": 4,
       "bestPlayers": "3",
       "playTime": "120",
-      "category": "Civilization",
+      "category": "Economic",
       "bggCategories": [
-        "Civilization",
-        "Economic"
+        "Economic",
+        "Civilization"
       ],
       "bggMechanics": [
         "Action Points",
@@ -1989,11 +1989,11 @@
       "maxPlayers": 4,
       "bestPlayers": "3",
       "playTime": "120",
-      "category": "Animals",
+      "category": "Puzzle",
       "bggCategories": [
+        "Puzzle",
         "Animals",
-        "Farming",
-        "Industry / Manufacturing"
+        "Farming"
       ],
       "bggMechanics": [
         "Action Points",
@@ -2033,10 +2033,10 @@
       "maxPlayers": 4,
       "bestPlayers": "3",
       "playTime": "120",
-      "category": "Adventure",
+      "category": "Card Game",
       "bggCategories": [
-        "Adventure",
         "Card Game",
+        "Adventure",
         "Exploration"
       ],
       "bggMechanics": [
@@ -2077,10 +2077,10 @@
       "maxPlayers": 2,
       "bestPlayers": "2",
       "playTime": "120",
-      "category": "Adventure",
+      "category": "Card Game",
       "bggCategories": [
-        "Adventure",
         "Card Game",
+        "Adventure",
         "Collectible Components"
       ],
       "bggMechanics": [
@@ -2165,10 +2165,10 @@
       "maxPlayers": 5,
       "bestPlayers": "4",
       "playTime": "150",
-      "category": "Civilization",
+      "category": "Economic",
       "bggCategories": [
-        "Civilization",
         "Economic",
+        "Civilization",
         "Fantasy"
       ],
       "bggMechanics": [
@@ -2209,10 +2209,10 @@
       "maxPlayers": 4,
       "bestPlayers": "2",
       "playTime": "120",
-      "category": "Adventure",
+      "category": "Dice",
       "bggCategories": [
-        "Adventure",
         "Dice",
+        "Adventure",
         "Fantasy"
       ],
       "bggMechanics": [
@@ -2297,10 +2297,10 @@
       "maxPlayers": 4,
       "bestPlayers": "1",
       "playTime": "240",
-      "category": "Adventure",
+      "category": "Exploration",
       "bggCategories": [
-        "Adventure",
         "Exploration",
+        "Adventure",
         "Fantasy"
       ],
       "bggMechanics": [
@@ -2377,5 +2377,5 @@
   ],
   "groupTogether": false,
   "shelfOrientation": "best",
-  "demoVersion": "f8e64510fb"
+  "demoVersion": "757176d6c5"
 }
