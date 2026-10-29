@@ -138,7 +138,9 @@ def assemble(ids, cache, snapshot):
             "u": t.get("numratings"),
             "w": t.get("complexity"),
             "rk": t["rank"],
-            "c": (t.get("categories") or [])[:3],
+            # Reorder here too: cached entries may predate order_categories, and the
+            # primary category has to be first before the list is cut to three.
+            "c": server.order_categories(t.get("categories") or [])[:3],
             "m": (t.get("mechanics") or [])[:3],
             "p": (t.get("publishers") or [None])[0],
             "d": (t.get("designers") or [None])[0],

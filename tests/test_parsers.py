@@ -13,6 +13,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import server  # noqa: E402
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts"))
+import build_catalog  # noqa: E402  (offline: only assemble() is used, no BGG calls)
+
 THING = """
 <item type="boardgame" id="173346">
   <thumbnail>https://example.test/thumb.jpg</thumbnail>
@@ -78,12 +81,56 @@ class ParseThingItemTests(unittest.TestCase):
     def test_base_game_url(self):
         self.assertEqual(self.game["bggUrl"], "https://boardgamegeek.com/boardgame/173346")
 
+    def test_category_prefers_genre_over_first_alphabetical_tag(self):
+        # BGG lists "Ancient" first; the front end uses categories[0] as the category.
+        self.assertEqual(self.game["categories"][0], "Card Game")
+
+    def test_category_reorder_keeps_every_bgg_category(self):
+        self.assertEqual(sorted(self.game["categories"]), ["Ancient", "Card Game"])
+
     def test_expansion_links_to_base_and_handles_not_ranked(self):
         exp = server.parse_thing_item(ET.fromstring(EXPANSION))
         self.assertEqual(exp["itemType"], "boardgameexpansion")
         self.assertEqual(exp["expandsId"], "173346")
         self.assertIsNone(exp["rank"])
         self.assertIn("/boardgameexpansion/200", exp["bggUrl"])
+
+
+class PrimaryCategoryTests(unittest.TestCase):
+    def test_full_7_wonders_duel_tags(self):
+        cats = ["Ancient", "Card Game", "City Building", "Civilization"]
+        self.assertEqual(server.primary_category(cats), "Card Game")
+
+    def test_preference_order_not_bgg_order_decides(self):
+        # Both are genres; the preference list, not BGG's alphabetical order, picks.
+        self.assertEqual(server.primary_category(["Economic", "Wargame"]), "Wargame")
+
+    def test_falls_back_to_first_tag_when_no_genre(self):
+        self.assertEqual(server.primary_category(["Fantasy", "Medieval"]), "Fantasy")
+
+    def test_no_categories(self):
+        self.assertIsNone(server.primary_category([]))
+        self.assertEqual(server.order_categories([]), [])
+
+    def test_order_moves_primary_first_and_keeps_the_rest_in_bgg_order(self):
+        self.assertEqual(
+            server.order_categories(["Ancient", "Card Game", "Mythology"]),
+            ["Card Game", "Ancient", "Mythology"],
+        )
+
+    def test_order_without_genre_is_unchanged(self):
+        self.assertEqual(server.order_categories(["Fantasy", "Medieval"]), ["Fantasy", "Medieval"])
+
+    def test_every_preferred_genre_is_listed_once(self):
+        self.assertEqual(len(server.GENRE_CATEGORIES), len(set(server.GENRE_CATEGORIES)))
+
+
+class CatalogCategoryTests(unittest.TestCase):
+    def test_assemble_puts_genre_first_before_cutting_to_three(self):
+        # A cache entry saved before the reorder existed, with the genre 4th alphabetically.
+        thing = {"name": "X", "rank": 1, "categories": ["Ancient", "Bluffing", "Fantasy", "Party Game"]}
+        catalog = build_catalog.assemble(["1"], {"1": {"thing": thing}}, "test")
+        self.assertEqual(catalog["games"][0]["c"], ["Party Game", "Ancient", "Bluffing"])
 
 
 class BestPlayerCountTests(unittest.TestCase):
