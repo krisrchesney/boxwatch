@@ -132,5 +132,53 @@ class BuildDemoTest(unittest.TestCase):
         self.assertFalse(os.path.exists(build_demo.OUT))
 
 
+    def _build_expecting_exit(self, catalog):
+        with open(build_demo.CATALOG, "w", encoding="utf-8") as f:
+            json.dump(catalog, f)
+        with contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaises(SystemExit) as cm:
+                build_demo.main()
+        return str(cm.exception)
+
+    def test_hand_picked_game_with_missing_dims_aborts_naming_the_game(self):
+        cat = fake_catalog()
+        del cat["games"][1]["dims"]  # Bravo: Deluxe
+        build_demo.DEMO_GAMES = ["Alpha", "Bravo: Deluxe"]
+        msg = self._build_expecting_exit(cat)
+        self.assertIn("Bravo: Deluxe", msg)
+        self.assertFalse(os.path.exists(build_demo.OUT))
+
+    def test_hand_picked_game_with_empty_dims_aborts_naming_the_game(self):
+        cat = fake_catalog()
+        cat["games"][1]["dims"] = []
+        build_demo.DEMO_GAMES = ["Alpha", "Bravo: Deluxe"]
+        msg = self._build_expecting_exit(cat)
+        self.assertIn("Bravo: Deluxe", msg)
+        self.assertFalse(os.path.exists(build_demo.OUT))
+
+    def test_checked_out_game_status_and_timestamp(self):
+        build_demo.CHECKED_OUT = "Bravo: Deluxe"
+        games = {g["name"]: g for g in self.build()["games"]}
+        out = games["Bravo: Deluxe"]
+        self.assertEqual(out["status"], "checked_out")
+        self.assertIsNotNone(out["checkedOutAt"])
+        others = [g for n, g in games.items() if n != "Bravo: Deluxe"]
+        self.assertTrue(others)
+        for g in others:
+            self.assertEqual(g["status"], "shelved")
+            self.assertIsNone(g["checkedOutAt"])
+
+    def test_placement_override_applies_to_that_game_only(self):
+        build_demo.PLACEMENT_OVERRIDES = {"Alpha": {"orientation": "horizontal", "depthPref": "back"}}
+        games = {g["name"]: g for g in self.build()["games"]}
+        self.assertEqual(games["Alpha"]["orientation"], "horizontal")
+        self.assertEqual(games["Alpha"]["depthPref"], "back")
+        others = [g for n, g in games.items() if n != "Alpha"]
+        self.assertTrue(others)
+        for g in others:
+            self.assertEqual(g["orientation"], "auto")
+            self.assertEqual(g["depthPref"], "auto")
+
+
 if __name__ == "__main__":
     unittest.main()

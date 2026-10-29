@@ -76,10 +76,13 @@ def main():
         sys.exit("not in catalog.json (top 500 only): " + ", ".join(missing))
 
     chosen = [by_name[n] for n in DEMO_GAMES]
+    no_dims = [g["n"] for g in chosen if not g.get("dims")]
+    if no_dims:
+        sys.exit("hand-picked game has no box dimensions in catalog.json: " + ", ".join(no_dims))
     used = sum(spine_if_it_fits(g["dims"]) or 0 for g in chosen)
     families = {family(g["n"]) for g in chosen}
     target = ROWS * COLS * CUBE_W * FILL
-    for g in ranked:  # then the best-ranked games that fit, one per series, until the shelf is ~80% full
+    for g in ranked:  # then the best-ranked games that fit, one per series, until the shelf is ~72% full (FILL)
         if used >= target:
             break
         if g in chosen or not g.get("dims") or family(g["n"]) in families:
