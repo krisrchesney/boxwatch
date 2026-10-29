@@ -1,0 +1,51 @@
+# Boxwatch backlog
+
+The shared board for every session. Statuses: Ready -> In progress -> Review -> Done.
+A ticket owns the files/functions it lists; two tickets in progress must never own the same thing.
+
+Template:
+
+    ### T-<n>: <title>
+    Status: Ready | In progress (branch) | Review (branch) | Done
+    Owns: <files, and for index.html the function or section names>
+    Blocked by: <ticket or "none">
+    Why: <one or two lines>
+    Done when:
+    - [ ] <something a reviewer can check without asking anyone>
+
+## Ready
+
+### T-1: Pick a better category than the first alphabetical tag
+Status: Ready
+Owns: server.py `parse_thing_item`; scripts/build_catalog.py category field; tests/test_parsers.py
+Blocked by: none
+Why: Category is the first tag BGG lists (alphabetical), so games often get a period
+or theme ("Ancient") instead of a genre ("Card Game").
+Done when:
+- [ ] A documented preference list of genre-like categories is used before falling back to the first tag
+- [ ] 7 Wonders Duel ("Ancient", "Card Game") gets "Card Game" in a unit test
+- [ ] Existing saved games are unaffected until they're refreshed
+
+### T-2: Run the checks on every push and pull request
+Status: Ready
+Owns: .github/workflows/check.yml (new file only; don't touch pages.yml)
+Blocked by: none
+Why: The Stop hook only guards local sessions. CI makes the same check visible on GitHub.
+Done when:
+- [ ] Workflow runs `python scripts/check.py` on push and pull_request, Python 3.12, no installs
+- [ ] README has a one-line status badge for it
+
+### T-3: Test the data builders offline
+Status: Ready
+Owns: tests/test_build_demo.py (new); scripts/build_demo.py only if a function must be split out to be testable
+Blocked by: none
+Why: build_demo.py writes what the public sees. It has no tests.
+Done when:
+- [ ] Tests build a demo from a tiny fake catalog with no network
+- [ ] They check every demo game comes from the catalog and `demoVersion` changes when the games change
+
+## In progress
+
+## Review
+
+## Done

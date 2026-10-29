@@ -11,3 +11,7 @@ boxwatch-data.json.tmp
 *.log
 scripts/.catalog_cache.json
 scripts/.catalog_cache.json.tmp
+
+# Claude Code: per-user settings and worktrees
+.claude/settings.local.json
+.claude/worktrees/
