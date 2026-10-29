@@ -48,7 +48,7 @@ class BuildDemoTest(unittest.TestCase):
         self.tmp = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.tmp, True)
         self.saved = (build_demo.CATALOG, build_demo.OUT, build_demo.DEMO_GAMES,
-                      build_demo.CHECKED_OUT, build_demo.PLACEMENT_OVERRIDES)
+                      build_demo.CHECKED_OUT, build_demo.PLACEMENT_OVERRIDES, build_demo.FILL)
         self.addCleanup(self._restore)
         build_demo.CATALOG = os.path.join(self.tmp, "catalog.json")
         build_demo.OUT = os.path.join(self.tmp, "demo-data.json")
@@ -58,11 +58,11 @@ class BuildDemoTest(unittest.TestCase):
 
     def _restore(self):
         (build_demo.CATALOG, build_demo.OUT, build_demo.DEMO_GAMES,
-         build_demo.CHECKED_OUT, build_demo.PLACEMENT_OVERRIDES) = self.saved
+         build_demo.CHECKED_OUT, build_demo.PLACEMENT_OVERRIDES, build_demo.FILL) = self.saved
 
     def build(self, catalog=None):
         with open(build_demo.CATALOG, "w", encoding="utf-8") as f:
-            json.dump(catalog or fake_catalog(), f)
+            json.dump(fake_catalog() if catalog is None else catalog, f)
         with contextlib.redirect_stdout(io.StringIO()):
             build_demo.main()
         with open(build_demo.OUT, encoding="utf-8") as f:
@@ -70,6 +70,7 @@ class BuildDemoTest(unittest.TestCase):
 
     def test_paths_are_temp_not_real_files(self):
         self.assertNotEqual(os.path.abspath(build_demo.OUT), os.path.join(ROOT, "demo-data.json"))
+        self.assertNotEqual(os.path.abspath(build_demo.CATALOG), os.path.join(ROOT, "catalog.json"))
         self.build()
         self.assertTrue(os.path.exists(build_demo.OUT))
 
@@ -107,10 +108,12 @@ class BuildDemoTest(unittest.TestCase):
         self.assertEqual(a["demoVersion"], b["demoVersion"])
 
     def test_demo_version_changes_when_game_set_changes(self):
-        base = self.build()["demoVersion"]
+        build_demo.FILL = 0  # no auto-fill, so the shelf holds exactly DEMO_GAMES
+        base = self.build()
         build_demo.DEMO_GAMES = ["Alpha", "Charlie"]
-        changed = self.build()["demoVersion"]
-        self.assertNotEqual(base, changed)
+        changed = self.build()
+        self.assertNotEqual({g["name"] for g in base["games"]}, {g["name"] for g in changed["games"]})
+        self.assertNotEqual(base["demoVersion"], changed["demoVersion"])
 
     def test_demo_version_changes_when_a_game_stat_changes(self):
         base = self.build()["demoVersion"]
