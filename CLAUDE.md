@@ -16,6 +16,9 @@ in one file, plain JS, no build step. The public demo is GitHub Pages.
   to make the check pass, unless the ticket says to. Fix the code instead.
 - When a ticket is approved, report in one line what went wrong or what the
   reviewer caught, so it can be added to "Lessons" below.
+- Models: Sonnet 5.5 is the default for every session and agent. Use Opus only
+  after asking the user and getting a yes, and say why (e.g. a reviewer's ESCALATE
+  line, or a task Sonnet has failed twice). Never switch to Opus on your own.
 - See docs/AGENT-WORKFLOW.md for how the pieces fit together.
 
 ## Conventions
