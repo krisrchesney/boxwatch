@@ -14,7 +14,11 @@ not commit, push, merge or change branches.
 3. Run `python scripts/check.py`.
 4. For each "Done when" item, say PASS or FAIL with evidence (a file:line, test
    name or command output).
-5. Look for bugs the tests don't cover: edge cases (empty shelf, one cube, a game
+5. Check the diff for weakened checks: any test deleted, skipped, loosened (an
+   assertion removed or made vaguer), or any change to scripts/check.py or
+   .claude/hooks/. Unless the ticket asks for it, that is an automatic CHANGES
+   NEEDED, even if everything passes. A green check that was made easier proves nothing.
+6. Look for bugs the tests don't cover: edge cases (empty shelf, one cube, a game
    with no dimensions, expansions stored in a base box), broken saved data for
    returning users, and anything in CLAUDE.md's "Never" list.
 

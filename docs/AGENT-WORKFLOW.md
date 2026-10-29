@@ -75,6 +75,24 @@ claude -p "Use the reviewer agent on branch ticket/T-2-ci and print its verdict"
 
 T-2 (the CI ticket) brings the same check to GitHub so it runs on every push.
 
+## Guardrails borrowed from the literature
+
+These come from the Databricks *Guide to Agentic Systems* and Roitman's
+*Hitchhiker's Guide to Agentic AI* (arXiv 2606.24937, ch. 19 and 26).
+
+- **The model that does the work never judges it.** Deterministic checks (the
+  hook) come first, and the separate reviewer covers what tests can't.
+- **Gaming the checks.** The easiest way for an agent to turn a failing check green is
+  to delete or loosen the test. CLAUDE.md forbids it, and the reviewer rejects
+  any weakened test or edited check/hook unless the ticket asks for it.
+- **Comprehension debt.** Agents can change code faster than you understand it.
+  Read each diff before merging, not just the reviewer's verdict. Run 2-3 builders, not 10.
+- **Cost caps.** Check a session's usage when it finishes. Any unattended
+  `claude -p` job gets `--max-turns` (and a budget flag if your CLI version has
+  one; check `claude --help`), so a stuck loop can't run all night.
+- **Learning between runs.** Each approved ticket adds one line to "Lessons" in
+  CLAUDE.md, which every later session reads. That's the cheap version of agent memory.
+
 ## Known gaps
 
 - The front end's logic (shelf layout etc.) is JavaScript inside index.html, and

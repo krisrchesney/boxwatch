@@ -12,6 +12,10 @@ in one file, plain JS, no build step. The public demo is GitHub Pages.
   runs it automatically.
 - When done: commit on your branch, set the ticket to "Review", and say so. Don't
   merge to main or push. The user merges after the `reviewer` agent approves.
+- Never delete, skip or loosen a test, or edit scripts/check.py or .claude/hooks/,
+  to make the check pass, unless the ticket says to. Fix the code instead.
+- When a ticket is approved, report in one line what went wrong or what the
+  reviewer caught, so it can be added to "Lessons" below.
 - See docs/AGENT-WORKFLOW.md for how the pieces fit together.
 
 ## Conventions
@@ -27,3 +31,8 @@ in one file, plain JS, no build step. The public demo is GitHub Pages.
 - Copy BGG cover images into the repo. Covers are hotlinked from BGG's CDN only.
 - Remove the BGG credit footer or `powered-by-bgg.png` from public pages, or alter BGG data values.
 - Use BGG data for AI training, or add anything commercial.
+
+## Lessons
+One line per finished ticket: what went wrong or what review caught. Added on
+main by the session that merges (not by builders, so branches don't conflict).
+Read these before starting a ticket.
