@@ -149,6 +149,62 @@ def parse_best_player_count(item):
     return best_count if best_votes > 0 else None
 
 
+# BGG lists a game's categories alphabetically, so the first one is often a period
+# or theme ("Ancient", "Fantasy") rather than what kind of game it is. These are
+# BGG's own category names that describe the kind of game, most telling first.
+# The first one a game has becomes its category; a game with none of them keeps
+# its first BGG tag.
+GENRE_CATEGORIES = (
+    "Wargame",
+    "Abstract Strategy",
+    "Party Game",
+    "Children's Game",
+    "Word Game",
+    "Trivia",
+    "Deduction",
+    "Puzzle",
+    "Card Game",
+    "Dice",
+    "Economic",
+    "Civilization",
+    "City Building",
+    "Territory Building",
+    "Exploration",
+    "Adventure",
+    "Fighting",
+    "Racing",
+    "Bluffing",
+    "Negotiation",
+    "Action / Dexterity",
+    "Memory",
+    "Real-time",
+    "Educational",
+)
+
+
+def primary_category(categories):
+    """The category that best says what kind of game this is, or None if there are none."""
+    for genre in GENRE_CATEGORIES:
+        if genre in categories:
+            return genre
+    return categories[0] if categories else None
+
+
+def order_categories(categories):
+    """BGG's categories with the primary one moved to the front; the rest keep BGG's order.
+
+    The front end and the catalog both use the first category as the game's category,
+    so putting the primary one first is all they need. No category is added, dropped or renamed.
+    """
+    categories = list(categories)
+    first = primary_category(categories)
+    if first is None:
+        return categories
+    rest = list(categories)
+    rest.remove(first)
+    return [first] + rest
+
+
 def parse_thing_item(item):
     name = None
     for n in item.findall("name"):
@@ -175,7 +231,9 @@ def parse_thing_item(item):
                 expands_id, expands_name = l.get("id"), l.get("value")
                 break
 
-    categories = [l.get("value") for l in item.findall("link") if l.get("type") == "boardgamecategory"]
+    categories = order_categories(
+        l.get("value") for l in item.findall("link") if l.get("type") == "boardgamecategory"
+    )
     mechanics = [l.get("value") for l in item.findall("link") if l.get("type") == "boardgamemechanic"]
     publishers = [l.get("value") for l in item.findall("link") if l.get("type") == "boardgamepublisher"]
     designers = [l.get("value") for l in item.findall("link") if l.get("type") == "boardgamedesigner"]
