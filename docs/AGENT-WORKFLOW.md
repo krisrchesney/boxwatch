@@ -87,7 +87,12 @@ These come from the Databricks *Guide to Agentic Systems* and Roitman's
   any weakened test or edited check/hook unless the ticket asks for it.
 - **Comprehension debt.** Agents can change code faster than you understand it.
   Read each diff before merging, not just the reviewer's verdict. Run 2-3 builders, not 10.
-- **Cost caps.** Check a session's usage when it finishes. Any unattended
+- **Usage caps (subscription, not dollars).** This runs on your Claude Max plan,
+  so nothing is billed per token. What you spend is plan usage, which refills in
+  windows. Watch the usage bar on claude.ai, and think in tokens, turns and time.
+  Any dollar number a tool prints is an API-equivalent estimate for comparing
+  models, not a charge. Make sure `ANTHROPIC_API_KEY` is unset, since a key would
+  bill per token instead of using the plan. Any unattended
   `claude -p` job gets `--max-turns` (and a budget flag if your CLI version has
   one; check `claude --help`), so a stuck loop can't run all night.
 - **Learning between runs.** Each approved ticket adds one line to "Lessons" in
