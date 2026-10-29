@@ -19,6 +19,7 @@ in one file, plain JS, no build step. The public demo is GitHub Pages.
 - Models: Sonnet 5.5 is the default for every session and agent. Use Opus only
   after asking the user and getting a yes, and say why (e.g. a reviewer's ESCALATE
   line, or a task Sonnet has failed twice). Never switch to Opus on your own.
+- Runs on the user's Claude subscription. Report usage (tokens, turns, time), not dollars.
 - See docs/AGENT-WORKFLOW.md for how the pieces fit together.
 
 ## Conventions
