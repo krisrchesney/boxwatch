@@ -36,6 +36,20 @@ in one file, plain JS, no build step. The public demo is GitHub Pages.
 - Remove the BGG credit footer or `powered-by-bgg.png` from public pages, or alter BGG data values.
 - Use BGG data for AI training, or add anything commercial.
 
+## Command Center asks (read at the start of every turn)
+This project is tracked on the user's Command Center Projects tab as `devprojects/boxwatch` in
+the private Command Center artifact (its link is in D:/Users/Kao/Claude/CommandCenter/CLAUDE.md) (load ArtifactData with ToolSearch "select:ArtifactData").
+- At the start of each turn, read that doc and every `devdecisions` doc whose `project` is "boxwatch".
+  Those are the user's clicks on its asks: approved, declined, done, snoozed, or an `answer`.
+- Treat an approved or answered ask as the user's own answer for routine local work and act on it.
+  For anything public or that uses a secret (pushing, creating a repo, publishing, tokens), confirm
+  once in chat first and say the page approval was seen.
+- When done, update the ask in `devprojects/boxwatch` pinned with `if_version`: copy the status and
+  answer, set `handledAt` and `handledBy`, and note the result in `lastActivity`. Add an ask there when
+  you need something only the user can give, and append a `usage` entry when a run finishes.
+- Full rules: D:\Users\Kao\Claude\CommandCenter\CLAUDE.md, rule `cc-projects-status`. Never put
+  secrets or tokens in the database.
+
 ## Lessons
 One line per finished ticket: what went wrong or what review caught. Added on
 main by the session that merges (not by builders, so branches don't conflict).
