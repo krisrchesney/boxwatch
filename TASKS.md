@@ -15,22 +15,22 @@ Template:
 
 ## Ready
 
-### T-4: Harden build_demo.py edge cases
-Status: Ready
-Owns: scripts/build_demo.py (a comment and one guard); tests/test_build_demo.py
-Blocked by: none
-Why: T-3's reviewer found a hand-picked game with no box size would crash the build, a comment says ~80% full where the setting is 72%, and the checked-out game and per-game placement overrides have no tests.
-Done when:
-- [ ] A hand-picked game with no dimensions gives a clear error naming the game, not a crash, with a test
-- [ ] The fill comment matches the real setting
-- [ ] Tests cover the checked-out game and one placement override
-- [ ] The rebuilt demo-data.json is unchanged
-
 ## In progress
 
 ## Review
 
 ## Done
+
+### T-4: Harden build_demo.py edge cases
+Status: Done (T-4 on main)
+Owns: scripts/build_demo.py (a comment and one guard); tests/test_build_demo.py
+Blocked by: none
+Why: T-3's reviewer found a hand-picked game with no box size would crash the build, a comment says ~80% full where the setting is 72%, and the checked-out game and per-game placement overrides have no tests.
+Done when:
+- [x] A hand-picked game with no dimensions gives a clear error naming the game, not a crash, with a test
+- [x] The fill comment matches the real setting
+- [x] Tests cover the checked-out game and one placement override
+- [x] The rebuilt demo-data.json is unchanged
 
 ### T-1: Pick a better category than the first alphabetical tag
 Status: Done (merged ticket/T-1-category, b407950)

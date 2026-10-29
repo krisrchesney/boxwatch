@@ -58,3 +58,4 @@ Read these before starting a ticket.
 - T-2: CI is only proven once pushed. Pin real action versions (checked: checkout v7, setup-python v7).
 - T-3: a "version changes" test passed only because the game order changed (auto-fill re-added the swapped game). Check the inputs really differ before comparing outputs.
 - Start builder sessions inside the repo folder. Sessions started elsewhere don't load the project's agents or the Stop hook, so the builder had to run the reviewer and checks by hand.
+- T-4: the reviewer approved with nothing to fix, but the test-writer's tests failed first (KeyError/IndexError on a game with no dims), which proved the guard was needed; a guard placed before the first use of the data is the minimal fix. A comment that quotes a setting (72%) goes stale, so name the constant instead.
