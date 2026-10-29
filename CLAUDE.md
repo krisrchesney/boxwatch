@@ -40,3 +40,7 @@ in one file, plain JS, no build step. The public demo is GitHub Pages.
 One line per finished ticket: what went wrong or what review caught. Added on
 main by the session that merges (not by builders, so branches don't conflict).
 Read these before starting a ticket.
+- T-1: the reviewer found nothing, but the risk was cached catalog entries losing their genre when the category list is cut to three, so a test now covers it. When a ticket can't edit index.html, reordering the data so the first item is the right one avoids touching it.
+- T-2: CI is only proven once pushed. Pin real action versions (checked: checkout v7, setup-python v7).
+- T-3: a "version changes" test passed only because the game order changed (auto-fill re-added the swapped game). Check the inputs really differ before comparing outputs.
+- Start builder sessions inside the repo folder. Sessions started elsewhere don't load the project's agents or the Stop hook, so the builder had to run the reviewer and checks by hand.
