@@ -32,9 +32,9 @@ You stay the prioritizer and the person who merges. The agents do the work in be
 |---|---|---|
 | `CLAUDE.md` | Loaded into **every** session and agent automatically. | Puts the rules (no secrets, BGG terms, stdlib only) in one place so you don't repeat them in every prompt. |
 | `TASKS.md` | The shared backlog. | Agents don't message each other; they coordinate through this file and git, like a team uses a ticket board. "Owns" stops two builders from editing the same function. |
-| `.claude/agents/planner.md` | Subagent: idea → tickets. Opus. Can't touch app code. | Splitting work so it really can run in parallel is the hardest part, so it gets the strongest model. |
+| `.claude/agents/planner.md` | Subagent: idea → tickets. Sonnet. Can't touch app code. | Splitting work so it really can run in parallel is the hardest part. If its tickets keep overlapping, ask to rerun it on Opus. |
 | `.claude/agents/test-writer.md` | Subagent: writes tests from "Done when". Sonnet. Edits only `tests/`. | Tests written from the spec, not from the code, catch the builder's misreadings. A cheaper model is fine here. |
-| `.claude/agents/reviewer.md` | Subagent: read-only review of one branch. Opus. | The author of code is the worst reviewer of it. A clean context with no edit tools can only judge. |
+| `.claude/agents/reviewer.md` | Subagent: read-only review of one branch. Sonnet; writes `ESCALATE` when a change needs Opus. | The author of code is the worst reviewer of it. A clean context with no edit tools can only judge. |
 | `scripts/check.py` | One command: compile all Python + run `tests/`. | Gives every agent and you the same definition of "healthy". |
 | `.claude/settings.json` + `.claude/hooks/check_on_stop.py` | A **Stop hook**: when Claude tries to end its turn, the harness runs the check. If it fails, exit code 2 sends the failure back and Claude keeps working. | Turns "I think it works" into "the tests passed". The harness enforces this, so the model can't skip it. It lets Claude stop on the second try so a check it can't fix never loops forever. |
 | `tests/` | Parser tests and repo-hygiene tests (demo only uses catalog games, BGG credit present, secrets not tracked). | The hygiene tests make the CLAUDE.md "Never" list machine-checked. |
