@@ -1,5 +1,7 @@
 # Boxwatch
 
+[![Check](https://github.com/krisrchesney/boxwatch/actions/workflows/check.yml/badge.svg)](https://github.com/krisrchesney/boxwatch/actions/workflows/check.yml)
+
 Plan where your board games go on the shelf.
 
 Boxwatch keeps a collection of board games, pulls their stats from
