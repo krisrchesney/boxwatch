@@ -913,6 +913,16 @@
           break;
         }
       }
+      // Nothing from here on has room (the later cubes are full, or this game is too thick to stack
+      // on what is there). Go back and use the space left in earlier cubes before giving up on it.
+      // slotPtr stays where it is, so the games after this one keep going in order.
+      for (var j = 0; j < Math.min(slotPtr, cubes.length) && !placed; j++) {
+        if (tryPlaceInCube(cubes[j], g)) {
+          g.homeSlot = cubes[j].slot.id;
+          g.slotIndex = cubes[j].count - 1;
+          placed = true;
+        }
+      }
       if (!placed) { g.homeSlot = null; unplacedCount++; }
       lastKey = key;
     });
