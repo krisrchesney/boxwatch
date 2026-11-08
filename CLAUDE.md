@@ -47,7 +47,7 @@ the private Command Center artifact (link kept privately) (load ArtifactData wit
 - When done, update the ask in `devprojects/boxwatch` pinned with `if_version`: copy the status and
   answer, set `handledAt` and `handledBy`, and note the result in `lastActivity`. Add an ask there when
   you need something only the user can give, and append a `usage` entry when a run finishes.
-- Full rules: the private Command Center notes. Never put
+- Full rules are kept in the private Command Center notes. Never put
   secrets or tokens in the database.
 
 ## Lessons
