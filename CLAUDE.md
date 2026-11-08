@@ -47,6 +47,13 @@ the private Command Center artifact (link kept privately) (load ArtifactData wit
 - When done, update the ask in `devprojects/boxwatch` pinned with `if_version`: copy the status and
   answer, set `handledAt` and `handledBy`, and note the result in `lastActivity`. Add an ask there when
   you need something only the user can give, and append a `usage` entry when a run finishes.
+
+- Answers given in chat count too. When the user answers or decides something in chat (here, or relayed
+  from the main chat) that matches an open ask, close that ask in the same turn: copy the answer, set
+  `handledAt` and `handledBy`. The board must never show "Needs you" for something already answered.
+- Before ending a turn, make the board match the chat: every question you are leaving with the user is an
+  open ask (with context and your pick), every question no longer open is handled, and `status`,
+  `nextSteps` and `lastActivity` (a short sentence, plus `updatedAt`) reflect this turn.
 - Full rules are kept in the private Command Center notes. Never put
   secrets or tokens in the database.
 
